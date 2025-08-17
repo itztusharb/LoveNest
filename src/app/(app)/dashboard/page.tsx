@@ -184,11 +184,6 @@ export default function DashboardPage() {
   );
 }
 
-function ImagePlaceholder({hint}: {hint: string}) {
-    return <Image src="https://placehold.co/100x100.png" width={100} height={100} alt="placeholder" className="aspect-square w-full rounded-md object-cover" data-ai-hint={hint} />
-}
-
-
 function DashboardSkeleton() {
   return (
     <div className="flex flex-col gap-8">
