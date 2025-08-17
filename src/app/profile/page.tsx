@@ -154,8 +154,8 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-1 flex flex-col gap-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div className="md:col-span-1 flex flex-col gap-8">
           <Card>
             <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
                <Avatar className="h-24 w-24">
@@ -226,7 +226,7 @@ export default function ProfilePage() {
 
         </div>
 
-        <div className="lg:col-span-2">
+        <div className="md:col-span-2">
             <Card>
                 <CardHeader>
                     <CardTitle>Profile Settings</CardTitle>

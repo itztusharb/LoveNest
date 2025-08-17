@@ -209,16 +209,16 @@ export default function GalleryPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {[...Array(8)].map((_, i) => (
                 <div key={i} className="space-y-2">
-                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="aspect-[3/2] w-full" />
                     <Skeleton className="h-4 w-3/4" />
                 </div>
             ))}
         </div>
       ) : photos.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {photos.map((photo) => (
             <Card key={photo.id} className="overflow-hidden">
               <CardContent className="p-0">
