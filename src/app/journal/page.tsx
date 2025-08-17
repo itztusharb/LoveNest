@@ -188,7 +188,7 @@ export default function JournalPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap">{entry.excerpt}</p>
+                <p className="text-muted-foreground whitespace-pre-wrap break-words">{entry.excerpt}</p>
               </CardContent>
             </Card>
           ))}
