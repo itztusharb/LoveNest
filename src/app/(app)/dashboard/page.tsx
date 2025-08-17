@@ -7,24 +7,47 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, BookText, Camera, Gift } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { differenceInDays, format, parseISO } from 'date-fns';
+import { differenceInDays, parseISO } from 'date-fns';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { getJournalEntries, JournalEntry } from '@/ai/flows/journal-flow';
+import { getPhotos, Photo } from '@/ai/flows/gallery-flow';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
+  const [latestEntry, setLatestEntry] = useState<JournalEntry | null>(null);
+  const [recentPhotos, setRecentPhotos] = useState<Photo[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
+  useEffect(() => {
+    if (user && !loading) {
+      const fetchData = async () => {
+        try {
+          setDataLoading(true);
+          const entries = await getJournalEntries(user.id);
+          if (entries.length > 0) {
+            setLatestEntry(entries[0]);
+          }
 
-  if (!user) {
-    // This can be a redirect or a message, but for now, we'll return null
-    // as the AuthProvider should handle redirection for unauthenticated users.
+          const photos = await getPhotos(user.id);
+          setRecentPhotos(photos.slice(0, 3));
+        } catch (error) {
+          console.error("Failed to fetch dashboard data", error);
+        } finally {
+          setDataLoading(false);
+        }
+      };
+      fetchData();
+    }
+  }, [user, loading]);
+
+  if (loading || !user) {
     return <DashboardSkeleton />;
   }
   
@@ -92,20 +115,30 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="flex-grow">
-            <div className="space-y-2">
-                <h3 className="font-semibold">A Day to Remember</h3>
-                <p className="text-sm text-muted-foreground line-clamp-3">
-                    We went to that little cafe by the park... It was such a perfect afternoon, just watching the world go by and talking for hours. I love how we can...
-                </p>
-            </div>
+            {dataLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            ) : latestEntry ? (
+              <div className="space-y-2">
+                  <h3 className="font-semibold">{latestEntry.title}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                      {latestEntry.excerpt}
+                  </p>
+              </div>
+            ) : (
+               <p className="text-sm text-muted-foreground">No journal entries yet. Write one!</p>
+            )}
           </CardContent>
-          <CardContent>
+          <CardFooter>
             <Button asChild variant="outline" className="w-full">
                 <Link href="/journal">
                     View Journal <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
             </Button>
-          </CardContent>
+          </CardFooter>
         </Card>
 
         <Card className="flex flex-col">
@@ -119,19 +152,29 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="flex-grow">
-             <div className="grid grid-cols-3 gap-2">
-                <ImagePlaceholder hint="couple smiling" />
-                <ImagePlaceholder hint="romantic dinner" />
-                <ImagePlaceholder hint="beach sunset" />
-             </div>
+            {dataLoading ? (
+               <div className="grid grid-cols-3 gap-2">
+                  <Skeleton className="aspect-square w-full" />
+                  <Skeleton className="aspect-square w-full" />
+                  <Skeleton className="aspect-square w-full" />
+               </div>
+            ) : recentPhotos.length > 0 ? (
+               <div className="grid grid-cols-3 gap-2">
+                  {recentPhotos.map(photo => (
+                    <Image key={photo.id} src={photo.src} width={100} height={100} alt={photo.caption} className="aspect-square w-full rounded-md object-cover" data-ai-hint={photo.hint} />
+                  ))}
+               </div>
+            ) : (
+                <p className="text-sm text-muted-foreground">No photos yet. Add some!</p>
+            )}
           </CardContent>
-           <CardContent>
+           <CardFooter>
             <Button asChild variant="outline" className="w-full">
                 <Link href="/gallery">
                     View Gallery <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
             </Button>
-          </CardContent>
+          </CardFooter>
         </Card>
       </div>
     </div>
@@ -182,9 +225,9 @@ function DashboardSkeleton() {
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />
           </CardContent>
-          <CardContent>
+          <CardFooter>
              <Skeleton className="h-10 w-full" />
-          </CardContent>
+          </CardFooter>
         </Card>
         <Card>
            <CardHeader>
@@ -203,9 +246,9 @@ function DashboardSkeleton() {
                 <Skeleton className="aspect-square w-full" />
             </div>
           </CardContent>
-          <CardContent>
+          <CardFooter>
             <Skeleton className="h-10 w-full" />
-          </CardContent>
+          </CardFooter>
         </Card>
       </div>
     </div>
