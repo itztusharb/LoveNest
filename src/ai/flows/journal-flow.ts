@@ -10,18 +10,8 @@ import {
   addJournalEntry as addJournalEntryService,
   getJournalEntries as getJournalEntriesService,
 } from '@/services/firebase';
-
-export const JournalEntrySchema = z.object({
-  id: z.string(),
-  userId: z.string(),
-  title: z.string(),
-  excerpt: z.string(),
-  date: z.string(),
-});
-export type JournalEntry = z.infer<typeof JournalEntrySchema>;
-
-const AddJournalEntryInputSchema = JournalEntrySchema.omit({ id: true });
-export type AddJournalEntryInput = z.infer<typeof AddJournalEntryInputSchema>;
+import { JournalEntrySchema, AddJournalEntryInputSchema } from '@/ai/schemas/journal-schema';
+import type { JournalEntry, AddJournalEntryInput } from '@/ai/schemas/journal-schema';
 
 
 const addJournalEntryFlow = ai.defineFlow(

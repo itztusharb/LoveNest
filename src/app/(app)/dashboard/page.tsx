@@ -16,8 +16,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInDays, parseISO } from 'date-fns';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { getJournalEntries, JournalEntry } from '@/ai/flows/journal-flow';
-import { getPhotos, Photo } from '@/ai/flows/gallery-flow';
+import { getJournalEntries } from '@/ai/flows/journal-flow';
+import { getPhotos } from '@/ai/flows/gallery-flow';
+import type { JournalEntry } from '@/ai/schemas/journal-schema';
+import type { Photo } from '@/ai/schemas/gallery-schema';
+
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();

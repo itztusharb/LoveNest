@@ -7,8 +7,8 @@ import {
 } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import type { UserProfile } from '@/ai/flows/user-profile-flow';
-import type { JournalEntry } from '@/ai/flows/journal-flow';
-import type { Photo, AddPhotoInput } from '@/ai/flows/gallery-flow';
+import type { JournalEntry } from '@/ai/schemas/journal-schema';
+import type { Photo, AddPhotoInput } from '@/ai/schemas/gallery-schema';
 import 'dotenv/config';
 
 
