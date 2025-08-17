@@ -1,14 +1,11 @@
-import { initializeApp, getApp, getApps, FirebaseApp } from 'firebase/app';
+
+import { initializeApp, getApp, getApps } from 'firebase/app';
 import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  UserCredential,
 } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
-import type { UserProfile } from '@/ai/flows/user-profile-flow';
-import type { JournalEntry } from '@/ai/schemas/journal-schema';
-import type { Photo, AddPhotoInput } from '@/ai/schemas/gallery-schema';
 import 'dotenv/config';
 
 
@@ -21,9 +18,9 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-let firebaseApp: FirebaseApp;
+let firebaseApp;
 
-export function getFirebaseApp(): FirebaseApp {
+export function getFirebaseApp() {
     if (getApps().length === 0) {
         if (!firebaseConfig.apiKey) {
             throw new Error('Missing Firebase API key');
@@ -36,9 +33,9 @@ export function getFirebaseApp(): FirebaseApp {
 }
 
 export async function createUserWithEmail(
-  email: string,
-  password: string
-): Promise<UserCredential> {
+  email,
+  password
+) {
   const app = getFirebaseApp();
   const auth = getAuth(app);
   try {
@@ -50,9 +47,9 @@ export async function createUserWithEmail(
 }
 
 export async function signInWithEmail(
-  email: string,
-  password: string
-): Promise<UserCredential> {
+  email,
+  password
+) {
   const app = getFirebaseApp();
   const auth = getAuth(app);
   try {
@@ -64,8 +61,8 @@ export async function signInWithEmail(
 }
 
 export async function getUserProfile(
-  userId: string
-): Promise<UserProfile | null> {
+  userId
+) {
     try {
         const app = getFirebaseApp();
         const db = getFirestore(app);
@@ -73,7 +70,7 @@ export async function getUserProfile(
         const userProfileSnap = await getDoc(userProfileRef);
 
         if (userProfileSnap.exists()) {
-            return userProfileSnap.data() as UserProfile;
+            return userProfileSnap.data();
         } else {
             console.log(`No profile found for user ${userId}, returning null.`);
             return null;
@@ -85,32 +82,32 @@ export async function getUserProfile(
     }
 }
 
-export async function updateUserProfile(profile: UserProfile): Promise<void> {
+export async function updateUserProfile(profile) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
     const userProfileRef = doc(db, 'userProfiles', profile.id);
     await setDoc(userProfileRef, profile, { merge: true });
 }
 
-export async function addJournalEntry(entry: Omit<JournalEntry, 'id'>): Promise<void> {
+export async function addJournalEntry(entry) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
     await addDoc(collection(db, 'journalEntries'), entry);
 }
 
-export async function getJournalEntries(userId: string): Promise<JournalEntry[]> {
+export async function getJournalEntries(userId) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
     const q = query(collection(db, 'journalEntries'), where('userId', '==', userId), orderBy('date', 'desc'));
     const querySnapshot = await getDocs(q);
-    const entries: JournalEntry[] = [];
+    const entries = [];
     querySnapshot.forEach((doc) => {
-        entries.push({ id: doc.id, ...doc.data() } as JournalEntry);
+        entries.push({ id: doc.id, ...doc.data() });
     });
     return entries;
 }
 
-export async function addPhoto(photo: AddPhotoInput): Promise<void> {
+export async function addPhoto(photo) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
     await addDoc(collection(db, 'photos'), {
@@ -119,14 +116,14 @@ export async function addPhoto(photo: AddPhotoInput): Promise<void> {
     });
 }
 
-export async function getPhotos(userId: string): Promise<Photo[]> {
+export async function getPhotos(userId) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
     const q = query(collection(db, 'photos'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
-    const photos: Photo[] = [];
+    const photos = [];
     querySnapshot.forEach((doc) => {
-        photos.push({ id: doc.id, ...doc.data() } as Photo);
+        photos.push({ id: doc.id, ...doc.data() });
     });
     return photos;
 }

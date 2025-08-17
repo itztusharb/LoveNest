@@ -1,39 +1,30 @@
 
+
 "use client";
 
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { useState, useEffect, createContext, ReactNode } from 'react';
-import { getAuth, onAuthStateChanged, User, signOut as firebaseSignOut } from 'firebase/auth';
+import { useState, useEffect, createContext, useContext } from 'react';
+import { getAuth, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { getFirebaseApp, getUserProfile } from '@/services/firebase';
-import type { UserProfile } from '@/ai/flows/user-profile-flow';
-import { useRouter, usePathname } from 'next/navigation';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 // 1. Define the Context
-interface AuthContextType {
-  user: UserProfile | null;
-  signOut: () => Promise<void>;
-  setUser: (user: UserProfile) => void;
-  loading: boolean;
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext(undefined);
 
 // 2. Create the AuthProvider Component
-function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
+function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     const app = getFirebaseApp();
     const auth = getAuth(app);
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setLoading(true);
       if (firebaseUser) {
         try {
@@ -70,7 +61,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const value = {
     user,
     signOut,
-    setUser: (updatedUser: UserProfile) => setUser(updatedUser),
+    setUser: (updatedUser) => setUser(updatedUser),
     loading,
   };
   
@@ -84,9 +75,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

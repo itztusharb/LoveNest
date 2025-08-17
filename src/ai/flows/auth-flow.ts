@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -16,7 +17,6 @@ import {
   signInWithEmail,
   updateUserProfile,
 } from '@/services/firebase';
-import type { UserProfile } from '@/ai/flows/user-profile-flow';
 
 const RegisterUserInputSchema = z.object({
   name: z.string(),
@@ -24,7 +24,7 @@ const RegisterUserInputSchema = z.object({
   password: z.string(),
   anniversary: z.string(),
 });
-export type RegisterUserInput = z.infer<typeof RegisterUserInputSchema>;
+
 
 const registerUserFlow = ai.defineFlow(
   {
@@ -39,7 +39,7 @@ const registerUserFlow = ai.defineFlow(
     );
     const userId = userCredential.user.uid;
 
-    const profile: UserProfile = {
+    const profile = {
       id: userId,
       name: input.name,
       email: input.email,
@@ -51,7 +51,7 @@ const registerUserFlow = ai.defineFlow(
   }
 );
 
-export async function registerUser(input: RegisterUserInput): Promise<void> {
+export async function registerUser(input) {
   await registerUserFlow(input);
 }
 
@@ -60,7 +60,7 @@ const SignInUserInputSchema = z.object({
   email: z.string().email(),
   password: z.string(),
 });
-export type SignInUserInput = z.infer<typeof SignInUserInputSchema>;
+
 
 const signInUserFlow = ai.defineFlow(
   {
@@ -74,6 +74,6 @@ const signInUserFlow = ai.defineFlow(
   }
 );
 
-export async function signInUser(input: SignInUserInput): Promise<string> {
+export async function signInUser(input) {
   return await signInUserFlow(input);
 }

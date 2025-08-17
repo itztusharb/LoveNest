@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from 'react';
@@ -38,7 +39,7 @@ export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
@@ -46,7 +47,7 @@ export default function SignInPage() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values) {
     setIsLoading(true);
     try {
       await signInUser(values);
@@ -54,9 +55,8 @@ export default function SignInPage() {
         title: 'Signed In!',
         description: 'Welcome back!',
       });
-      // Redirect to the root, which will handle routing to the dashboard
-      router.replace('/');
-    } catch (error: any) {
+      router.replace('/dashboard');
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',

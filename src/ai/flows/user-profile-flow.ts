@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -19,7 +20,6 @@ const UserProfileSchema = z.object({
   anniversary: z.string().describe('The relationship anniversary date (YYYY-MM-DD).'),
 });
 
-export type UserProfile = z.infer<typeof UserProfileSchema>;
 
 const updateUserProfileFlow = ai.defineFlow(
   {
@@ -32,6 +32,6 @@ const updateUserProfileFlow = ai.defineFlow(
   }
 );
 
-export async function updateUserProfile(profile: UserProfile): Promise<void> {
+export async function updateUserProfile(profile) {
   await updateUserProfileFlow(profile);
 }

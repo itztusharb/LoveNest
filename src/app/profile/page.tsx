@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -7,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { updateUserProfile, UserProfile } from '@/ai/flows/user-profile-flow';
+import { updateUserProfile } from '@/ai/flows/user-profile-flow';
 import { useEffect, useState } from 'react';
 import { useAuthContext } from '@/hooks/use-auth';
 
@@ -37,12 +38,12 @@ export default function ProfilePage() {
     return null;
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (user) {
       setIsSaving(true);
       try {
-        const updatedProfile: UserProfile = {
+        const updatedProfile = {
           ...user,
           name,
           anniversary,

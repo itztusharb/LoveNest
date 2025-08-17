@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { AppShell } from '@/components/app-shell';
@@ -10,9 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AppLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}) {
   const { user, loading } = useAuthContext();
   const router = useRouter();
 
