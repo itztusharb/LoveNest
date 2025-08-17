@@ -163,8 +163,8 @@ export default function ProfilePage() {
                 <AvatarFallback>{name.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="w-full">
-                  <p className="text-xl font-semibold">{user.name}</p>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                  <p className="text-xl font-semibold break-words">{user.name}</p>
+                  <p className="text-sm text-muted-foreground break-words">{user.email}</p>
               </div>
                 <Input 
                     type="file" 
