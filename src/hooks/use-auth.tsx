@@ -5,7 +5,7 @@ import { getAuth, onAuthStateChanged, User, signOut as firebaseSignOut } from 'f
 import { getFirebaseApp } from '@/services/firebase';
 import { getUserProfile } from '@/services/firebase';
 import type { UserProfile } from '@/ai/flows/user-profile-flow';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface AuthContextType {
     user: UserProfile | null;
@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         const app = getFirebaseApp();
@@ -30,8 +31,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 try {
                     const profile = await getUserProfile(firebaseUser.uid);
                     setUser(profile);
-                    // Redirect to dashboard if they are on a public page
-                    if (window.location.pathname === '/' || window.location.pathname === '/sign-in') {
+                    
+                    const isAuthPage = pathname === '/' || pathname === '/sign-in';
+                    if (isAuthPage) {
                          router.push('/dashboard');
                     }
                 } catch (error) {
@@ -46,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         return () => unsubscribe();
-    }, [router]);
+    }, [router, pathname]);
 
     const signOut = async () => {
         const app = getFirebaseApp();
