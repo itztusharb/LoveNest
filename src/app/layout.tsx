@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AppShell } from '@/components/app-shell';
 
 export const metadata: Metadata = {
-  title: 'LoveNest',
+  title: 'Lovebirds',
   description: 'A special place for couples to connect.',
 };
 
