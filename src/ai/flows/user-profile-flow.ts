@@ -16,7 +16,7 @@ const UserProfileSchema = z.object({
   id: z.string().describe('The user ID.'),
   name: z.string().describe('The name of the user.'),
   email: z.string().email().describe('The email of the user.'),
-  photoUrl: z.string().url().describe('The URL of the user\'s photo.'),
+  photoUrl: z.string().url().describe("The URL of the user's photo."),
   anniversary: z.string().describe('The relationship anniversary date (YYYY-MM-DD).'),
 });
 
@@ -29,6 +29,9 @@ const updateUserProfileFlow = ai.defineFlow(
     outputSchema: z.void(),
   },
   async (profile) => {
+    if (!firebaseApp) {
+        throw new Error("Firebase is not configured. Cannot update profile.");
+    }
     const db = getFirestore(firebaseApp);
     const userProfileRef = doc(db, 'userProfiles', profile.id);
     await setDoc(userProfileRef, profile, { merge: true });

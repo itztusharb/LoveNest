@@ -1,4 +1,4 @@
-import { initializeApp, getApp, getApps } from 'firebase/app';
+import { initializeApp, getApp, getApps, FirebaseApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import { UserProfile } from '@/ai/flows/user-profile-flow';
 
@@ -11,13 +11,34 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-export const firebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(firebaseApp);
+// Function to check if the Firebase config is valid
+function isFirebaseConfigValid(config: typeof firebaseConfig): boolean {
+  return Object.values(config).every(value => !!value);
+}
+
+// Initialize Firebase only if the config is valid
+let app: FirebaseApp | null = null;
+if (isFirebaseConfigValid(firebaseConfig)) {
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+}
+export const firebaseApp = app;
+
+const db = firebaseApp ? getFirestore(firebaseApp) : null;
 
 
 // A helper function to get a user's profile.
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
+    if (!db) {
+        console.warn("Firestore is not initialized. Serving mock data.");
+        // Return a default profile if the database is not configured
+        return {
+            id: userId,
+            name: 'User',
+            email: 'user@email.com',
+            photoUrl: 'https://placehold.co/80x80.png',
+            anniversary: '2020-07-25',
+        };
+    }
     const userProfileRef = doc(db, 'userProfiles', userId);
     const userProfileSnap = await getDoc(userProfileRef);
 
