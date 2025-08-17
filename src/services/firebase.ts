@@ -7,7 +7,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, limit, writeBatch } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, limit, writeBatch, updateDoc } from 'firebase/firestore';
 import 'dotenv/config';
 
 
@@ -218,13 +218,14 @@ export async function createLinkRequest(request: { fromUserId: string, fromUserN
 export async function getNotifications(userId) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
-    const q = query(collection(db, 'notifications'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'notifications'), where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
     const notifications = [];
     querySnapshot.forEach((doc) => {
         notifications.push({ id: doc.id, ...doc.data() });
     });
-    return notifications;
+    // Sort manually to avoid composite index requirement
+    return notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export async function respondToLinkRequest({ linkRequestId, notificationId, response }) {
