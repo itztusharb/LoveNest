@@ -3,7 +3,7 @@
 
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext } from 'react';
 import { getAuth, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { getFirebaseApp, getUserProfile } from '@/services/firebase';
 
@@ -20,10 +20,11 @@ function AuthProvider({ children }) {
     const auth = getAuth(app);
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
       if (firebaseUser) {
         try {
           const profile = await getUserProfile(firebaseUser.uid);
-          setUser(profile || null); // Set user to profile or null if not found
+          setUser(profile || null);
         } catch (error) {
           console.error("Failed to fetch user profile", error);
           setUser(null);
