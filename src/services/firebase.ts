@@ -148,7 +148,7 @@ export async function addJournalEntry(entry) {
 }
 
 export async function getJournalEntries(userIds: string[]) {
-    if (userIds.length === 0) {
+    if (!userIds || userIds.length === 0) {
         return [];
     }
     const app = getFirebaseApp();
@@ -178,17 +178,15 @@ export async function addPhoto(photo) {
 }
 
 export async function getPhotos(userIds: string[]) {
-    if (userIds.length === 0) {
+    if (!userIds || userIds.length === 0) {
         return [];
     }
     const app = getFirebaseApp();
     const db = getFirestore(app);
     
-    // To get photos from the user and their partner, we query where 'userId' is the main user OR where 'partnerId' is the main user.
-    // This fetches photos uploaded by the user, and photos uploaded by the partner where the user was the partner at the time of upload.
-    const userPhotosQuery = query(collection(db, 'photos'), where('userId', 'in', userIds));
+    const photosQuery = query(collection(db, 'photos'), where('userId', 'in', userIds));
     
-    const querySnapshot = await getDocs(userPhotosQuery);
+    const querySnapshot = await getDocs(photosQuery);
     const photos = [];
     querySnapshot.forEach((doc) => {
         photos.push({ id: doc.id, ...doc.data() });
