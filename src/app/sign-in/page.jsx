@@ -60,12 +60,20 @@ export default function SignInPage() {
       router.replace('/');
     } catch (error) {
       console.error("Google Sign-In Error", error);
-      toast({
-        variant: 'destructive',
-        title: 'Uh oh! Something went wrong.',
-        description:
-          error.message || 'There was a problem with your Google Sign-In request.',
-      });
+      if (error.code === 'auth/popup-closed-by-user') {
+         toast({
+            variant: 'destructive',
+            title: 'Sign-in Cancelled',
+            description: 'You closed the sign-in window. Please try again.',
+        });
+      } else {
+        toast({
+            variant: 'destructive',
+            title: 'Uh oh! Something went wrong.',
+            description:
+            error.message || 'There was a problem with your Google Sign-In request.',
+        });
+      }
     } finally {
       setIsLoading(false);
     }
