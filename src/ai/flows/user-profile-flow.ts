@@ -15,7 +15,7 @@ import {
   findUserByEmail,
   getUserProfile,
   createLinkRequest,
-  unlinkPartners as unlinkPartnerService,
+  unlinkPartner as unlinkPartnerService,
 } from '@/services/firebase';
 
 const UserProfileSchema = z.object({

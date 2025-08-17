@@ -271,7 +271,7 @@ export async function markNotificationAsRead(notificationId: string) {
     await updateDoc(notificationRef, { isRead: true });
 }
 
-export async function unlinkPartners(userId, partnerId) {
+export async function unlinkPartner(userId, partnerId) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
     const batch = writeBatch(db);
