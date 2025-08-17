@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -9,12 +11,40 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Camera, BookText } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/use-auth';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useMemo } from 'react';
+import { differenceInDays, parseISO, format } from 'date-fns';
 
 export default function Dashboard() {
+  const { user, loading } = useAuth();
+
+  const anniversaryInfo = useMemo(() => {
+    if (!user?.anniversary) return null;
+    try {
+      const anniversaryDate = parseISO(user.anniversary);
+      const today = new Date();
+      let nextAnniversary = new Date(today.getFullYear(), anniversaryDate.getMonth(), anniversaryDate.getDate());
+      if (nextAnniversary < today) {
+        nextAnniversary.setFullYear(today.getFullYear() + 1);
+      }
+      const daysAway = differenceInDays(nextAnniversary, today);
+      const formattedDate = format(nextAnniversary, "MMMM d");
+      return { daysAway, formattedDate };
+    } catch(e) {
+      // Handles invalid date format in DB
+      return null;
+    }
+  }, [user?.anniversary]);
+
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
+
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Welcome, Lovebirds!</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Welcome, {user?.name || 'Lovebirds'}!</h1>
         <p className="text-muted-foreground">
           Here's a glimpse into your shared world.
         </p>
@@ -32,10 +62,16 @@ export default function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted p-8 text-center">
-              <p className="text-4xl font-bold text-primary">July 25</p>
-              <p className="text-muted-foreground">24 days away</p>
-            </div>
+            {anniversaryInfo ? (
+              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted p-8 text-center">
+                <p className="text-4xl font-bold text-primary">{anniversaryInfo.formattedDate}</p>
+                <p className="text-muted-foreground">{anniversaryInfo.daysAway} days away</p>
+              </div>
+            ) : (
+                 <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted p-8 text-center">
+                    <p className="text-muted-foreground">Set your anniversary date in your profile!</p>
+                </div>
+            )}
           </CardContent>
         </Card>
 
@@ -103,4 +139,52 @@ export default function Dashboard() {
       </div>
     </div>
   );
+}
+
+
+function DashboardSkeleton() {
+  return (
+    <div className="flex flex-col gap-8">
+      <div>
+        <Skeleton className="h-10 w-1/2" />
+        <Skeleton className="h-4 w-1/3 mt-2" />
+      </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+             <Skeleton className="h-6 w-3/4" />
+             <Skeleton className="h-4 w-1/2 mt-1" />
+          </CardHeader>
+          <CardContent>
+             <Skeleton className="h-32 w-full" />
+          </CardContent>
+        </Card>
+         <Card>
+          <CardHeader>
+             <Skeleton className="h-6 w-3/4" />
+             <Skeleton className="h-4 w-1/2 mt-1" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+             <Skeleton className="h-5 w-1/3" />
+             <Skeleton className="h-12 w-full" />
+             <Skeleton className="h-9 w-24" />
+          </CardContent>
+        </Card>
+         <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/2 mt-1" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-2">
+                <Skeleton className="h-[100px] w-[100px] rounded-md" />
+                <Skeleton className="h-[100px] w-[100px] rounded-md" />
+                <Skeleton className="h-[100px] w-[100px] rounded-md" />
+            </div>
+            <Skeleton className="h-9 w-full mt-4" />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
 }

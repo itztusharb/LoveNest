@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getAuth, onAuthStateChanged, User, signOut as firebaseSignOut } from 'firebase/auth';
 import { getFirebaseApp } from '@/services/firebase';
 import { getUserProfile } from '@/services/firebase';
@@ -41,5 +41,10 @@ export function useAuth() {
     router.push('/');
   };
 
-  return { user, loading, signOut };
+  // Allow components to update the auth context's user state
+  const setAuthUser = useCallback((newProfile: UserProfile) => {
+    setUser(newProfile);
+  }, []);
+
+  return { user, loading, signOut, setUser: setAuthUser };
 }
