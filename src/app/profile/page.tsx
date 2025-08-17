@@ -3,21 +3,29 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { updateUserProfile } from '@/ai/flows/user-profile-flow';
+import { updateUserProfile, linkPartner, getPartnerProfile } from '@/ai/flows/user-profile-flow';
 import { useEffect, useState, useRef } from 'react';
 import { useAuthContext } from '@/hooks/use-auth';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { PartyPopper, UserX } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthContext();
   const [name, setName] = useState('');
   const [anniversary, setAnniversary] = useState('');
+  const [partnerEmail, setPartnerEmail] = useState('');
+  const [partner, setPartner] = useState(null);
+  const [partnerLoading, setPartnerLoading] = useState(true);
+
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isLinking, setIsLinking] = useState(false);
   const fileInputRef = useRef(null);
 
 
@@ -33,6 +41,19 @@ export default function ProfilePage() {
       } else {
         setAnniversary('');
       }
+
+      const fetchPartner = async () => {
+        setPartnerLoading(true);
+        if (user.partnerId) {
+          const partnerProfile = await getPartnerProfile(user.id);
+          setPartner(partnerProfile);
+        } else {
+          setPartner(null);
+        }
+        setPartnerLoading(false);
+      }
+      fetchPartner();
+
     }
   }, [user]);
 
@@ -100,6 +121,30 @@ export default function ProfilePage() {
     }
   };
 
+  const handleLinkPartner = async (e) => {
+    e.preventDefault();
+    if (!partnerEmail) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Please enter your partner\'s email.' });
+      return;
+    }
+    setIsLinking(true);
+    try {
+      const result = await linkPartner({ userId: user.id, partnerEmail });
+      if (result.success) {
+        toast({ title: 'Success!', description: result.message });
+        setPartner(result.partner);
+        // We need to update the local user context as well
+        setUser(prevUser => ({...prevUser, partnerId: result.partner.id }));
+      } else {
+        toast({ variant: 'destructive', title: 'Error', description: result.message });
+      }
+    } catch (error) {
+       toast({ variant: 'destructive', title: 'Error', description: 'An unexpected error occurred.' });
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -110,7 +155,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 flex flex-col gap-8">
           <Card>
             <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
                <Avatar className="h-24 w-24">
@@ -138,6 +183,47 @@ export default function ProfilePage() {
                 </Button>
             </CardContent>
           </Card>
+           <Card>
+            <CardHeader>
+              <CardTitle>Partner Details</CardTitle>
+              <CardDescription>Your linked partner account.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {partnerLoading ? (
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-4">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-[150px]" />
+                      <Skeleton className="h-4 w-[100px]" />
+                    </div>
+                  </div>
+                </div>
+              ) : partner ? (
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={partner.photoUrl} alt={partner.name} data-ai-hint="man smiling"/>
+                    <AvatarFallback>{partner.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold">{partner.name}</p>
+                    <p className="text-sm text-muted-foreground">{partner.email}</p>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleLinkPartner} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="partnerEmail">Partner's Email</Label>
+                      <Input id="partnerEmail" type="email" placeholder="partner@example.com" value={partnerEmail} onChange={(e) => setPartnerEmail(e.target.value)} />
+                    </div>
+                    <Button className="w-full" type="submit" disabled={isLinking}>
+                      {isLinking ? 'Linking...' : 'Link Account'}
+                    </Button>
+                </form>
+              )}
+            </CardContent>
+          </Card>
+
         </div>
 
         <div className="lg:col-span-2">

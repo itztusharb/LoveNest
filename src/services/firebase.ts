@@ -54,6 +54,7 @@ export async function signInWithGoogle() {
         email: user.email,
         photoUrl: user.photoURL,
         anniversary: null, // User needs to set this in their profile
+        partnerId: null,
       };
       await updateUserProfile(newUserProfile);
     }
@@ -114,6 +115,17 @@ export async function getUserProfile(
         // In case of error, we don't want to return mock data, but let the caller handle it.
         throw error;
     }
+}
+
+export async function findUserByEmail(email) {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    const q = query(collection(db, 'userProfiles'), where('email', '==', email), limit(1));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+        return querySnapshot.docs[0].data();
+    }
+    return null;
 }
 
 export async function updateUserProfile(profile) {
