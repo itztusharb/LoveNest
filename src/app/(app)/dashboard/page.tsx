@@ -195,7 +195,7 @@ function DashboardSkeleton() {
                     <Skeleton className="mt-1 h-4 w-24" />
                 </div>
             </div>
-          </Header>
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-2">
                 <Skeleton className="aspect-square w-full" />
