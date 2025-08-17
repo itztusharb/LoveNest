@@ -12,13 +12,14 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, BookText, Camera, Gift } from 'lucide-react';
+import { ArrowRight, BookText, Camera, Gift, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInDays, parseISO } from 'date-fns';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { getJournalEntries } from '@/ai/flows/journal-flow';
 import { getPhotos } from '@/ai/flows/gallery-flow';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function DashboardPage() {
   const { user } = useAuthContext();
@@ -83,6 +84,16 @@ export default function DashboardPage() {
           Here's a snapshot of your shared world.
         </p>
       </div>
+
+       {!user.anniversary && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Set Your Anniversary!</AlertTitle>
+          <AlertDescription>
+            Please go to your <Link href="/profile" className="font-bold underline">profile</Link> to set your relationship anniversary.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card className="flex flex-col">
@@ -164,7 +175,7 @@ export default function DashboardPage() {
             ) : recentPhotos.length > 0 ? (
                <div className="grid grid-cols-3 gap-2">
                   {recentPhotos.map(photo => (
-                    <Image key={photo.id} src={photo.src} width={100} height={100} alt={photo.caption} className="aspect-square w-full rounded-md object-cover" data-ai-hint={photo.hint} />
+                    <Image key={photo.id} src={photo.src} width={100} height={100} alt={photo.caption} className="aspect-square w-full rounded-md object-cover" data-ai-hint={photo.hint} unoptimized/>
                   ))}
                </div>
             ) : (
