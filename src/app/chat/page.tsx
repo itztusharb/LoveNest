@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Send } from 'lucide-react';
+import { Send, MessagesSquare } from 'lucide-react';
 import { useAuthContext } from '@/hooks/use-auth';
 import { useEffect, useState, useRef } from 'react';
 import { getPartnerProfile } from '@/ai/flows/user-profile-flow';
@@ -23,6 +23,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -56,11 +57,8 @@ export default function ChatPage() {
 
   useEffect(() => {
     // Scroll to bottom when messages change
-    if (scrollAreaRef.current) {
-        const scrollableView = scrollAreaRef.current.querySelector('div');
-        if (scrollableView) {
-            scrollableView.scrollTop = scrollableView.scrollHeight;
-        }
+    if (viewportRef.current) {
+      viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
     }
   }, [messages]);
 
@@ -83,21 +81,30 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-        <div className="flex h-[calc(100vh-8rem)] flex-col">
+        <div className="flex h-[calc(100vh-8rem)] flex-col border rounded-lg">
             <div className="flex items-center gap-4 border-b p-4">
                 <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="space-y-2">
+                <div className="space-y-1">
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-3 w-16" />
                 </div>
             </div>
-            <div className="flex-1 p-4 space-y-4">
-                <Skeleton className="h-16 w-3/4 rounded-lg" />
-                <Skeleton className="h-16 w-3/4 rounded-lg self-end ml-auto" />
-                <Skeleton className="h-12 w-1/2 rounded-lg" />
+            <div className="flex-1 p-4 space-y-6 overflow-y-auto">
+                <div className="flex items-end gap-2 justify-start">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-12 w-48 rounded-lg" />
+                </div>
+                 <div className="flex items-end gap-2 justify-end">
+                    <Skeleton className="h-16 w-64 rounded-lg" />
+                </div>
+                <div className="flex items-end gap-2 justify-start">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-10 w-32 rounded-lg" />
+                </div>
             </div>
-            <div className="border-t p-4">
-                <Skeleton className="h-10 w-full" />
+            <div className="flex items-center gap-2 border-t p-4">
+                <Skeleton className="h-10 flex-1" />
+                <Skeleton className="h-10 w-10" />
             </div>
         </div>
     );
@@ -105,15 +112,16 @@ export default function ChatPage() {
 
   if (!partner) {
      return (
-      <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center">
-        <p className="text-lg font-semibold">No Partner Linked</p>
-        <p className="text-muted-foreground">Please link with a partner to start chatting.</p>
+        <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center rounded-lg border-2 border-dashed">
+            <MessagesSquare className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-semibold">No Partner Linked</h3>
+            <p className="mt-2 text-sm text-muted-foreground">Link with a partner on your profile page to start chatting.</p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col">
+    <div className="flex h-[calc(100vh-8rem)] flex-col border rounded-lg">
       <div className="flex items-center gap-4 border-b p-4">
         <Avatar>
           <AvatarImage src={partner.photoUrl} alt={partner.name} data-ai-hint="person smiling" />
@@ -121,12 +129,11 @@ export default function ChatPage() {
         </Avatar>
         <div>
           <h2 className="font-semibold">{partner.name}</h2>
-          {/* You might want to implement a real presence system later */}
           <p className="text-sm text-muted-foreground">Online</p>
         </div>
       </div>
       <ScrollArea className="flex-1" ref={scrollAreaRef}>
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-6" ref={viewportRef}>
           {messages.map((message) => (
             <div
               key={message.id}
@@ -146,11 +153,11 @@ export default function ChatPage() {
                   'max-w-xs rounded-lg p-3 lg:max-w-md',
                   message.senderId === user.id
                     ? 'rounded-br-none bg-primary text-primary-foreground'
-                    : 'rounded-bl-none bg-card'
+                    : 'rounded-bl-none bg-card border'
                 )}
               >
-                <p className="text-sm">{message.text}</p>
-                 <p className="mt-1 text-right text-xs text-muted-foreground/80">
+                <p className="text-sm break-words">{message.text}</p>
+                 <p className={cn("mt-1 text-right text-xs",  message.senderId === user.id ? "text-primary-foreground/80" : "text-muted-foreground/80")}>
                   {format(new Date(message.createdAt), "p")}
                 </p>
               </div>
@@ -158,7 +165,7 @@ export default function ChatPage() {
           ))}
         </div>
       </ScrollArea>
-      <div className="border-t p-4">
+      <div className="border-t bg-background p-2 md:p-4">
         <form className="flex items-center gap-2" onSubmit={handleSendMessage}>
           <Input
             placeholder="Type a message..."
@@ -168,6 +175,7 @@ export default function ChatPage() {
           />
           <Button type="submit" size="icon" disabled={!newMessage.trim()}>
             <Send className="h-4 w-4" />
+            <span className="sr-only">Send</span>
           </Button>
         </form>
       </div>
