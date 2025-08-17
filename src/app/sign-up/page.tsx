@@ -24,16 +24,22 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Heart } from 'lucide-react';
-import { signInUser } from '@/ai/flows/auth-flow';
+import { registerUser } from '@/ai/flows/auth-flow';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
-  password: z.string(),
+  password: z
+    .string()
+    .min(6, { message: 'Password must be at least 6 characters.' }),
+  anniversary: z.string().refine((val) => val && !isNaN(Date.parse(val)), {
+    message: 'Please enter a valid anniversary date.',
+  }),
 });
 
-export default function SignInPage() {
+export default function SignUpPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -41,27 +47,28 @@ export default function SignInPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: '',
       email: '',
       password: '',
+      anniversary: '',
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await signInUser(values);
+      await registerUser(values);
       toast({
-        title: 'Signed In!',
-        description: 'Welcome back!',
+        title: 'Account Created!',
+        description: "You've successfully created your account. Signing in...",
       });
-      // Redirect to the root page, which will handle routing to the dashboard
+      // Redirect to the root, which will handle routing to the dashboard.
       router.push('/');
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
-        description:
-          error.message || 'There was a problem with your request.',
+        description: error.message || 'There was a problem with your request.',
       });
     } finally {
       setIsLoading(false);
@@ -74,28 +81,41 @@ export default function SignInPage() {
         <div>
             <Heart className="mx-auto h-12 w-auto text-primary" />
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-foreground">
-            Sign in to your Lovebirds account
+            Create your Lovebirds account
             </h2>
             <p className="mt-2 text-center text-sm text-muted-foreground">
             Or{' '}
             <Link
-                href="/sign-up"
+                href="/sign-in"
                 className="font-medium text-primary hover:text-primary/90"
             >
-                create a new account
+                sign in to your existing account
             </Link>
             </p>
         </div>
         <Card>
             <CardHeader>
-            <CardTitle>Sign In</CardTitle>
+            <CardTitle>Sign Up</CardTitle>
             <CardDescription>
-                Enter your credentials to access your account.
+                Enter your details to create a shared space for you and your partner.
             </CardDescription>
             </CardHeader>
             <CardContent>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Your Name</FormLabel>
+                        <FormControl>
+                        <Input placeholder="Enter your name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
                 <FormField
                     control={form.control}
                     name="email"
@@ -130,8 +150,21 @@ export default function SignInPage() {
                     </FormItem>
                     )}
                 />
+                <FormField
+                    control={form.control}
+                    name="anniversary"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Anniversary</FormLabel>
+                        <FormControl>
+                        <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Signing In...' : 'Sign In'}
+                    {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
                 </form>
             </Form>

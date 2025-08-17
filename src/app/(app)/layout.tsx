@@ -44,23 +44,21 @@ function AuthProvider({ children }: { children: ReactNode }) {
           if (profile) {
             setUser(profile);
           } else {
-            // Profile doesn't exist, this is an invalid state, force sign out.
             console.error("Profile not found for authenticated user. Signing out.");
             await firebaseSignOut(auth);
-            // No need to setUser(null) here as the onAuthStateChanged will fire again with null
+            // The onAuthStateChanged listener will handle the user=null case
           }
         } catch (error) {
           console.error("Failed to fetch user profile, signing out.", error);
           await firebaseSignOut(auth);
         } finally {
-            // This now correctly happens after profile fetch attempt
             setLoading(false);
         }
       } else {
         // Not logged in.
         setUser(null);
         setLoading(false);
-        router.push('/sign-in');
+        router.replace('/sign-in');
       }
     });
 
@@ -71,7 +69,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     const app = getFirebaseApp();
     const auth = getAuth(app);
     await firebaseSignOut(auth);
-    // setUser(null) will be handled by the onAuthStateChanged listener
+    // onAuthStateChanged will redirect to /sign-in
   };
 
   // While loading, show a full-page skeleton
