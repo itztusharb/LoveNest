@@ -45,23 +45,22 @@ function AuthProvider({ children }: { children: ReactNode }) {
             setUser(profile);
           } else {
             // Profile doesn't exist, this is an invalid state, force sign out.
+            console.error("Profile not found for authenticated user. Signing out.");
             await firebaseSignOut(auth);
-            setUser(null);
-            router.push('/');
+            // No need to setUser(null) here as the onAuthStateChanged will fire again with null
           }
         } catch (error) {
           console.error("Failed to fetch user profile, signing out.", error);
           await firebaseSignOut(auth);
-          setUser(null);
-          router.push('/');
         } finally {
+            // This now correctly happens after profile fetch attempt
             setLoading(false);
         }
       } else {
         // Not logged in.
         setUser(null);
         setLoading(false);
-        router.push('/');
+        router.push('/sign-in');
       }
     });
 
@@ -72,8 +71,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     const app = getFirebaseApp();
     const auth = getAuth(app);
     await firebaseSignOut(auth);
-    setUser(null);
-    router.push('/');
+    // setUser(null) will be handled by the onAuthStateChanged listener
   };
 
   // While loading, show a full-page skeleton
@@ -89,8 +87,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
   
-  // After loading, if there's no user, redirect has already been triggered by useEffect.
-  // This check prevents children from rendering with a null user.
+  // After loading, if there's no user, the effect will have already redirected.
+  // This check prevents children from rendering with a null user while redirecting.
   if (!user) {
     return null; 
   }
