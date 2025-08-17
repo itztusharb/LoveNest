@@ -8,12 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, BookText, Camera, Gift } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInDays, format, parseISO } from 'date-fns';
+import Image from 'next/image';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -23,7 +23,9 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    return null; // Or a message encouraging them to sign in
+    // This can be a redirect or a message, but for now, we'll return null
+    // as the AuthProvider should handle redirection for unauthenticated users.
+    return <DashboardSkeleton />;
   }
   
   const getDaysToAnniversary = () => {
@@ -118,9 +120,9 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-grow">
              <div className="grid grid-cols-3 gap-2">
-                <ImagePlaceholder />
-                <ImagePlaceholder />
-                <ImagePlaceholder />
+                <ImagePlaceholder hint="couple smiling" />
+                <ImagePlaceholder hint="romantic dinner" />
+                <ImagePlaceholder hint="beach sunset" />
              </div>
           </CardContent>
            <CardContent>
@@ -136,8 +138,8 @@ export default function DashboardPage() {
   );
 }
 
-function ImagePlaceholder() {
-    return <div className="aspect-square w-full rounded-md bg-muted" />
+function ImagePlaceholder({hint}: {hint: string}) {
+    return <Image src="https://placehold.co/100x100.png" width={100} height={100} alt="placeholder" className="aspect-square w-full rounded-md object-cover" data-ai-hint={hint} />
 }
 
 
@@ -193,7 +195,7 @@ function DashboardSkeleton() {
                     <Skeleton className="mt-1 h-4 w-24" />
                 </div>
             </div>
-          </CardHeader>
+          </Header>
           <CardContent>
             <div className="grid grid-cols-3 gap-2">
                 <Skeleton className="aspect-square w-full" />
