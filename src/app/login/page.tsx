@@ -25,6 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Heart } from 'lucide-react';
 import { registerUser, RegisterUserInput } from '@/ai/flows/auth-flow';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -43,6 +44,7 @@ const formSchema = z.object({
 export default function LoginPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,9 +65,7 @@ export default function LoginPage() {
         title: 'Account Created!',
         description: "You've successfully created your account.",
       });
-      // In a real app, you would redirect the user or update the UI state
-      // For now, we just reset the form.
-      form.reset();
+      router.push('/');
     } catch (error: any) {
       toast({
         variant: 'destructive',

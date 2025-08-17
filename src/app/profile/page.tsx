@@ -8,37 +8,37 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { updateUserProfile, UserProfile } from '@/ai/flows/user-profile-flow';
 import { useEffect, useState } from 'react';
-import { getUserProfile } from '@/services/firebase';
+import { useAuth } from '@/hooks/use-auth';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProfilePage() {
+  const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [name, setName] = useState('');
   const [anniversary, setAnniversary] = useState('');
   const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    async function fetchProfile() {
-      // In a real app, you'd get the user ID from authentication
-      const userId = 'sample-user';
-      const userProfile = await getUserProfile(userId);
-      if (userProfile) {
-        setProfile(userProfile);
-        setName(userProfile.name);
-        setAnniversary(userProfile.anniversary);
-      }
+    if (user) {
+      setProfile(user);
+      setName(user.name);
+      setAnniversary(user.anniversary);
     }
-    fetchProfile();
-  }, []);
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (profile) {
+      setIsSaving(true);
       try {
-        await updateUserProfile({
+        const updatedProfile = {
           ...profile,
           name,
           anniversary,
-        });
+        };
+        await updateUserProfile(updatedProfile);
+        setProfile(updatedProfile); // Update local state
         toast({
           title: 'Success!',
           description: 'Your profile has been updated.',
@@ -49,15 +49,46 @@ export default function ProfilePage() {
           title: 'Error',
           description: 'Failed to update profile.',
         });
+      } finally {
+        setIsSaving(false);
       }
     }
   };
-
-  if (!profile) {
+  
+  if (authLoading || !profile) {
     return (
-      <div className="flex items-center justify-center h-full">
-        Loading...
-      </div>
+        <div className="flex flex-col gap-8">
+            <div>
+                <Skeleton className="h-10 w-1/3" />
+                <Skeleton className="h-4 w-1/2 mt-2" />
+            </div>
+            <Card className="max-w-2xl">
+                <CardHeader>
+                    <Skeleton className="h-8 w-32" />
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="flex items-center gap-4">
+                        <Skeleton className="h-20 w-20 rounded-full" />
+                        <Skeleton className="h-10 w-28" />
+                    </div>
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="flex justify-end">
+                        <Skeleton className="h-10 w-32" />
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
     );
   }
 
@@ -78,7 +109,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20">
                 <AvatarImage src={profile.photoUrl} alt="@user" data-ai-hint="woman smiling"/>
-                <AvatarFallback>U</AvatarFallback>
+                <AvatarFallback>{name.charAt(0)}</AvatarFallback>
               </Avatar>
               <Button variant="outline" type="button">Change Photo</Button>
             </div>
@@ -95,7 +126,9 @@ export default function ProfilePage() {
               <Input id="anniversary" type="date" value={anniversary} onChange={(e) => setAnniversary(e.target.value)} />
             </div>
             <div className="flex justify-end">
-              <Button type="submit">Save Changes</Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </Button>
             </div>
           </form>
         </CardContent>

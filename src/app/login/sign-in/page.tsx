@@ -25,6 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Heart } from 'lucide-react';
 import { signInUser } from '@/ai/flows/auth-flow';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -34,6 +35,7 @@ const formSchema = z.object({
 export default function SignInPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,15 +48,12 @@ export default function SignInPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const userId = await signInUser(values);
+      await signInUser(values);
       toast({
         title: 'Signed In!',
         description: 'Welcome back!',
       });
-      // In a real app, you would redirect the user to the dashboard
-      console.log('Signed in user ID:', userId);
-      // For now, we just reset the form.
-      form.reset();
+      router.push('/');
     } catch (error: any) {
       toast({
         variant: 'destructive',
