@@ -7,7 +7,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, limit, writeBatch, updateDoc, deleteField, FieldValue } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, writeBatch, updateDoc, deleteField, FieldValue } from 'firebase/firestore';
 import 'dotenv/config';
 
 
@@ -125,7 +125,7 @@ export async function getUserProfile(
 export async function findUserByEmail(email) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
-    const q = query(collection(db, 'userProfiles'), where('email', '==', email), limit(1));
+    const q = query(collection(db, 'userProfiles'), where('email', '==', email));
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
         return querySnapshot.docs[0].data();
@@ -146,10 +146,13 @@ export async function addJournalEntry(entry) {
     await addDoc(collection(db, 'journalEntries'), entry);
 }
 
-export async function getJournalEntries(userId) {
+export async function getJournalEntries(userIds: string[]) {
+    if (userIds.length === 0) {
+        return [];
+    }
     const app = getFirebaseApp();
     const db = getFirestore(app);
-    const q = query(collection(db, 'journalEntries'), where('userId', '==', userId));
+    const q = query(collection(db, 'journalEntries'), where('userId', 'in', userIds));
     const querySnapshot = await getDocs(q);
     const entries = [];
     querySnapshot.forEach((doc) => {

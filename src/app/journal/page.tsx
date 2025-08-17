@@ -7,10 +7,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, BookOpen, Trash2 } from 'lucide-react';
+import { PlusCircle, BookOpen } from 'lucide-react';
 import { useAuthContext } from '@/hooks/use-auth';
 import { useEffect, useState } from 'react';
 import { getJournalEntries, addJournalEntry } from '@/ai/flows/journal-flow';
@@ -30,6 +29,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 export default function JournalPage() {
   const { user } = useAuthContext();
@@ -47,8 +48,8 @@ export default function JournalPage() {
     if (user) {
       try {
         setLoading(true);
-        const userEntries = await getJournalEntries(user.id);
-        setEntries(userEntries);
+        const combinedEntries = await getJournalEntries(user.id);
+        setEntries(combinedEntries);
       } catch (error) {
         console.error("Failed to fetch journal entries", error);
         toast({
@@ -87,6 +88,8 @@ export default function JournalPage() {
     try {
       await addJournalEntry({
         userId: user.id,
+        userName: user.name,
+        userPhotoUrl: user.photoUrl,
         title,
         excerpt,
         date: new Date().toISOString(),
@@ -164,8 +167,13 @@ export default function JournalPage() {
             {[...Array(3)].map((_, i) => (
                 <Card key={i}>
                     <CardHeader>
-                        <Skeleton className="h-6 w-1/2" />
-                        <Skeleton className="h-4 w-1/4" />
+                        <div className="flex items-center gap-4">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <div className="space-y-1">
+                                <Skeleton className="h-5 w-32" />
+                                <Skeleton className="h-4 w-24" />
+                            </div>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2">
@@ -180,12 +188,20 @@ export default function JournalPage() {
       ) : entries.length > 0 ? (
         <div className="space-y-6">
           {entries.map((entry) => (
-            <Card key={entry.id}>
+            <Card key={entry.id} className={cn(entry.userId === user.id ? 'border-primary/50' : '')}>
               <CardHeader>
-                <CardTitle>{entry.title}</CardTitle>
-                <CardDescription>
-                  {format(new Date(entry.date), "MMMM d, yyyy")}
-                </CardDescription>
+                 <div className="flex items-center gap-4">
+                    <Avatar>
+                        <AvatarImage src={entry.userPhotoUrl} alt={entry.userName} />
+                        <AvatarFallback>{entry.userName.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <CardTitle>{entry.title}</CardTitle>
+                        <CardDescription>
+                            By {entry.userName} on {format(new Date(entry.date), "MMMM d, yyyy")}
+                        </CardDescription>
+                    </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground whitespace-pre-wrap break-words">{entry.excerpt}</p>

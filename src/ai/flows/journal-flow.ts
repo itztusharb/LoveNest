@@ -9,6 +9,7 @@ import { z } from 'genkit';
 import {
   addJournalEntry as addJournalEntryService,
   getJournalEntries as getJournalEntriesService,
+  getUserProfile,
 } from '@/services/firebase';
 import { JournalEntrySchema, AddJournalEntryInputSchema } from '@/ai/schemas/journal-schema';
 import type { JournalEntry, AddJournalEntryInput } from '@/ai/schemas/journal-schema';
@@ -34,7 +35,16 @@ const getJournalEntriesFlow = ai.defineFlow({
     inputSchema: z.string(), // userId
     outputSchema: z.array(JournalEntrySchema),
 }, async (userId) => {
-    return await getJournalEntriesService(userId);
+    const userProfile = await getUserProfile(userId);
+    const userIdsToFetch = [userId];
+    if (userProfile?.partnerId) {
+        userIdsToFetch.push(userProfile.partnerId);
+    }
+    
+    const entries = await getJournalEntriesService(userIdsToFetch);
+    
+    // Entries are already sorted by the service function
+    return entries;
 });
 
 export async function getJournalEntries(userId: string): Promise<JournalEntry[]> {
