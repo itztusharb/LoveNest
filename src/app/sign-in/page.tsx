@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -53,7 +54,7 @@ export default function SignInPage() {
         title: 'Signed In!',
         description: 'Welcome back!',
       });
-      router.push('/');
+      router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',

@@ -6,7 +6,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { getAuth, onAuthStateChanged, User, signOut as firebaseSignOut } from 'firebase/auth';
 import { getFirebaseApp, getUserProfile } from '@/services/firebase';
 import type { UserProfile } from '@/ai/flows/user-profile-flow';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // 1. Define the Context
@@ -32,7 +32,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     const app = getFirebaseApp();
@@ -44,9 +43,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
           const profile = await getUserProfile(firebaseUser.uid);
           if (profile) {
             setUser(profile);
-             if (pathname !== '/dashboard') {
-              router.push('/dashboard');
-            }
           } else {
             // Profile doesn't exist, force sign out
             await firebaseSignOut(auth);
@@ -68,7 +64,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, [router, pathname]);
+  }, [router]);
 
   const signOut = async () => {
     const app = getFirebaseApp();
