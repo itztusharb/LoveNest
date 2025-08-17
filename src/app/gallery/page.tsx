@@ -8,7 +8,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, UploadCloud, X } from 'lucide-react';
+import { PlusCircle, UploadCloud, X, Camera } from 'lucide-react';
 import { useAuthContext } from '@/hooks/use-auth';
 import { useEffect, useState, useRef } from 'react';
 import { getPhotos, addPhoto } from '@/ai/flows/gallery-flow';
