@@ -20,14 +20,13 @@ function AuthProvider({ children }) {
     const auth = getAuth(app);
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setLoading(true);
       if (firebaseUser) {
         try {
           const profile = await getUserProfile(firebaseUser.uid);
-          setUser(profile || null);
+          setUser(profile || null); // If profile doesn't exist, user is null
         } catch (error) {
           console.error("Failed to fetch user profile", error);
-          setUser(null);
+          setUser(null); // On error, treat as logged out
         }
       } else {
         setUser(null);
@@ -42,6 +41,7 @@ function AuthProvider({ children }) {
     const app = getFirebaseApp();
     const auth = getAuth(app);
     await firebaseSignOut(auth);
+    setUser(null);
     // The redirect will be handled by the page logic now
   };
 
