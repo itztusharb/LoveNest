@@ -12,9 +12,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
-import { CircleUserRound, LogOut } from 'lucide-react';
+import { CircleUserRound, LogIn, LogOut } from 'lucide-react';
 
 export function UserNav() {
+  // In a real app, you'd have logic to determine if the user is logged in
+  const isLoggedIn = false;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -26,28 +29,39 @@ export function UserNav() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">User</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              user@email.com
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <Link href="/profile">
+        {isLoggedIn ? (
+          <>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">User</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  user@email.com
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <Link href="/profile">
+                <DropdownMenuItem>
+                  <CircleUserRound className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+              </Link>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <CircleUserRound className="mr-2 h-4 w-4" />
-              <span>Profile</span>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <Link href="/login">
+            <DropdownMenuItem>
+              <LogIn className="mr-2 h-4 w-4" />
+              <span>Login / Sign Up</span>
             </DropdownMenuItem>
           </Link>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
-        </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
