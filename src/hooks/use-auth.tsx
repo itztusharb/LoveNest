@@ -32,14 +32,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     const profile = await getUserProfile(firebaseUser.uid);
                     if (profile) {
                         setUser(profile);
-                        const isAuthPage = pathname === '/' || pathname === '/sign-in';
-                        if (isAuthPage) {
-                             router.push('/dashboard');
-                        }
                     } else {
                        // This case can happen if the user is created in auth but the profile document isn't.
                        // For now, we treat it as logged out.
                        setUser(null); 
+                       router.push('/');
                     }
                 } catch (error) {
                     console.error("Failed to fetch user profile, signing out.", error);
@@ -51,6 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } else {
                 setUser(null);
                 setLoading(false);
+                const isAuthPage = pathname === '/' || pathname === '/sign-in';
+                if (!isAuthPage) {
+                    router.push('/');
+                }
             }
         });
 

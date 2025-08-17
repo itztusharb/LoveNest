@@ -23,13 +23,13 @@ import type { Photo } from '@/ai/schemas/gallery-schema';
 
 
 export default function DashboardPage() {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [latestEntry, setLatestEntry] = useState<JournalEntry | null>(null);
   const [recentPhotos, setRecentPhotos] = useState<Photo[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    if (user && !loading) {
+    if (user) {
       const fetchData = async () => {
         try {
           setDataLoading(true);
@@ -48,18 +48,29 @@ export default function DashboardPage() {
       };
       fetchData();
     }
-  }, [user, loading]);
+  }, [user]);
 
-  if (loading || !user) {
+  if (authLoading) {
+    return <DashboardSkeleton />;
+  }
+  
+  if (!user) {
+    // This can happen briefly on redirect or if auth fails.
+    // Or you can redirect them to the login page.
     return <DashboardSkeleton />;
   }
   
   const getDaysToAnniversary = () => {
     if (!user.anniversary) return null;
     try {
+      // The date from firestore might be just a string, ensure it's parsed correctly
       const anniversaryDate = parseISO(user.anniversary);
       const today = new Date();
+      // Set hours to 0 to compare dates only
+      today.setHours(0, 0, 0, 0);
       let nextAnniversary = new Date(today.getFullYear(), anniversaryDate.getMonth(), anniversaryDate.getDate());
+      nextAnniversary.setHours(0,0,0,0);
+
       if (nextAnniversary < today) {
         nextAnniversary.setFullYear(today.getFullYear() + 1);
       }
