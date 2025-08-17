@@ -77,113 +77,111 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <Heart className="mx-auto h-12 w-auto text-primary" />
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-foreground">
-            Create your Lovebirds account
-          </h2>
-          <p className="mt-2 text-center text-sm text-muted-foreground">
-            Or{' '}
-            <a href="#" className="font-medium text-primary hover:text-primary/90">
-              sign in to your existing account
-            </a>
-          </p>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign Up</CardTitle>
-            <CardDescription>
-              Enter your details to create a shared space for you and your partner.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Your Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="you@example.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="••••••••"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="dob"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Your Birthday</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="anniversary"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Anniversary</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+    <div className="w-full max-w-md space-y-8 px-4 py-12 sm:px-6 lg:px-8">
+      <div>
+        <Heart className="mx-auto h-12 w-auto text-primary" />
+        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-foreground">
+          Create your Lovebirds account
+        </h2>
+        <p className="mt-2 text-center text-sm text-muted-foreground">
+          Or{' '}
+          <a href="#" className="font-medium text-primary hover:text-primary/90">
+            sign in to your existing account
+          </a>
+        </p>
       </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Sign Up</CardTitle>
+          <CardDescription>
+            Enter your details to create a shared space for you and your partner.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Your Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email Address</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="you@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="dob"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Your Birthday</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="anniversary"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Anniversary</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Creating Account...' : 'Create Account'}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

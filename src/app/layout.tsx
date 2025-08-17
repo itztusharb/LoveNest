@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { AppShell } from '@/components/app-shell';
 
 export const metadata: Metadata = {
   title: 'LoveNest',
@@ -28,7 +27,7 @@ export default function RootLayout({
         ></link>
       </head>
       <body className="font-body antialiased">
-        <AppShell>{children}</AppShell>
+        {children}
         <Toaster />
       </body>
     </html>
