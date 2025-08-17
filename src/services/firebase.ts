@@ -4,6 +4,8 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import 'dotenv/config';
@@ -30,6 +32,38 @@ export function getFirebaseApp() {
         firebaseApp = getApp();
     }
     return firebaseApp;
+}
+
+export async function signInWithGoogle() {
+  const app = getFirebaseApp();
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // Check if user profile already exists
+    const profile = await getUserProfile(user.uid);
+    
+    if (!profile) {
+      // If profile doesn't exist, create it
+      const newUserProfile = {
+        id: user.uid,
+        name: user.displayName,
+        email: user.email,
+        photoUrl: user.photoURL,
+        anniversary: null, // User needs to set this in their profile
+      };
+      await updateUserProfile(newUserProfile);
+    }
+    
+    return result;
+
+  } catch(error) {
+    console.error("Error during Google sign-in:", error);
+    throw error;
+  }
 }
 
 export async function createUserWithEmail(
