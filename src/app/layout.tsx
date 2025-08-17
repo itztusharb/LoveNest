@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 
 // 1. Define the Context
 interface AuthContextType {
-  user: UserProfile | null; 
+  user: UserProfile | null;
   signOut: () => Promise<void>;
   setUser: (user: UserProfile) => void;
   loading: boolean;
@@ -34,6 +34,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     const auth = getAuth(app);
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
+      setLoading(true);
       if (firebaseUser) {
         try {
           const profile = await getUserProfile(firebaseUser.uid);
@@ -42,35 +43,22 @@ function AuthProvider({ children }: { children: ReactNode }) {
           } else {
              console.error("Profile not found for authenticated user, signing out.");
              await firebaseSignOut(auth);
+             setUser(null);
           }
         } catch (error) {
           console.error("Failed to fetch user profile, signing out.", error);
           await firebaseSignOut(auth);
-        } finally {
-            setLoading(false);
+          setUser(null);
         }
       } else {
         setUser(null);
-        setLoading(false);
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (loading) return;
-
-    const isAuthPage = pathname === '/sign-in' || pathname === '/sign-up';
-
-    if (!user && !isAuthPage) {
-      router.replace('/sign-in');
-    }
-    if (user && isAuthPage) {
-      router.replace('/dashboard');
-    }
-
-  }, [user, loading, pathname, router]);
 
   const signOut = async () => {
     const app = getFirebaseApp();
@@ -79,18 +67,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
     router.replace('/sign-in');
   };
 
-  if (loading) {
-    return (
-        <div className="flex h-screen w-screen items-center justify-center">
-            <div className="w-full max-w-md space-y-4 p-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
-            </div>
-        </div>
-    );
-  }
-  
   const value = {
     user,
     signOut,
@@ -134,4 +110,3 @@ export default function RootLayout({
     </html>
   );
 }
-

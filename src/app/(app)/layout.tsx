@@ -3,19 +3,37 @@
 
 import { AppShell } from '@/components/app-shell';
 import { useAuthContext } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// 3. Update AppLayout to use the new Provider
+
 export default function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { user } = useAuthContext();
+  const { user, loading } = useAuthContext();
+  const router = useRouter();
 
-  // If user is not loaded yet, AuthProvider will show a loading screen.
-  // if they are loaded and not present, it will redirect.
-  // so if we are here, we have a user.
-  if (!user) return null;
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/sign-in');
+    }
+  }, [user, loading, router]);
+
+
+  if (loading || !user) {
+     return (
+        <div className="flex h-screen w-screen items-center justify-center">
+            <div className="w-full max-w-md space-y-4 p-4">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+            </div>
+        </div>
+    );
+  }
 
   return (
       <AppShell>{children}</AppShell>
