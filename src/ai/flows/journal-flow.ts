@@ -57,15 +57,26 @@ const getJournalEntriesFlow = ai.defineFlow({
                 userCache.set(entry.userId, authorProfile);
             }
         }
+        
+        // If author profile still not found, we can't enrich, so we might skip this entry
+        // or provide defaults. Let's provide defaults to avoid crashes.
+        if (!authorProfile) {
+           return {
+                ...entry,
+                userName: 'Unknown User',
+                userPhotoUrl: `https://placehold.co/80x80.png?text=?`,
+            };
+        }
 
         return {
             ...entry,
-            userName: authorProfile?.name || 'Unknown User',
-            userPhotoUrl: authorProfile?.photoUrl || `https://placehold.co/80x80.png?text=?`,
+            userName: authorProfile.name,
+            userPhotoUrl: authorProfile.photoUrl,
         };
     }));
     
-    return enrichedEntries as JournalEntry[];
+    // Filter out any null/undefined entries that might have been created
+    return enrichedEntries.filter(Boolean) as JournalEntry[];
 });
 
 export async function getJournalEntries(userId: string): Promise<JournalEntry[]> {
