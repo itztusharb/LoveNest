@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
 import { CircleUserRound, LogIn, LogOut } from 'lucide-react';
-import { useAuthContext } from '@/app/(app)/layout';
+import { useAuthContext } from '@/hooks/use-auth';
 
 export function UserNav() {
   const { user, signOut } = useAuthContext();
@@ -56,10 +56,10 @@ export function UserNav() {
             </DropdownMenuItem>
           </>
         ) : (
-          <Link href="/sign-up">
+          <Link href="/sign-in">
             <DropdownMenuItem>
               <LogIn className="mr-2 h-4 w-4" />
-              <span>Login / Sign Up</span>
+              <span>Login</span>
             </DropdownMenuItem>
           </Link>
         )}

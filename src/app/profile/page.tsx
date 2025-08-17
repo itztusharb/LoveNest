@@ -9,8 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { updateUserProfile, UserProfile } from '@/ai/flows/user-profile-flow';
 import { useEffect, useState } from 'react';
-import { useAuthContext } from '@/app/(app)/layout';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useAuthContext } from '@/hooks/use-auth';
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthContext();
@@ -33,6 +32,10 @@ export default function ProfilePage() {
       }
     }
   }, [user]);
+
+  if (!user) {
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useAuthContext } from '@/app/(app)/layout';
+import { useAuthContext } from '@/hooks/use-auth';
 import {
   Card,
   CardContent,
@@ -52,7 +52,7 @@ export default function DashboardPage() {
   }, [user]);
   
   const getDaysToAnniversary = () => {
-    if (!user.anniversary) return null;
+    if (!user || !user.anniversary) return null;
     try {
       const anniversaryDate = parseISO(user.anniversary);
       const today = new Date();
@@ -72,6 +72,9 @@ export default function DashboardPage() {
 
   const daysToAnniversary = getDaysToAnniversary();
 
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-8">

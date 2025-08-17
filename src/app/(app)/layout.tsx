@@ -2,111 +2,7 @@
 "use client";
 
 import { AppShell } from '@/components/app-shell';
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { getAuth, onAuthStateChanged, User, signOut as firebaseSignOut } from 'firebase/auth';
-import { getFirebaseApp, getUserProfile } from '@/services/firebase';
-import type { UserProfile } from '@/ai/flows/user-profile-flow';
-import { useRouter } from 'next/navigation';
-import { Skeleton } from '@/components/ui/skeleton';
-
-// 1. Define the Context
-interface AuthContextType {
-  user: UserProfile; // User is guaranteed to be non-null in protected routes
-  signOut: () => Promise<void>;
-  setUser: (user: UserProfile) => void;
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Custom hook to use the AuthContext
-export function useAuthContext() {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuthContext must be used within an AuthProvider');
-    }
-    return context;
-}
-
-// 2. Create the AuthProvider Component
-function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    const app = getFirebaseApp();
-    const auth = getAuth(app);
-
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
-      if (firebaseUser) {
-        try {
-          const profile = await getUserProfile(firebaseUser.uid);
-          if (profile) {
-            setUser(profile);
-          } else {
-            // This can happen if the user document hasn't been created yet.
-            // For now, we'll treat it as a "not logged in" state.
-             console.error("Profile not found for authenticated user, signing out.");
-             await firebaseSignOut(auth);
-             // The listener will re-run with firebaseUser = null
-          }
-        } catch (error) {
-          console.error("Failed to fetch user profile, signing out.", error);
-          await firebaseSignOut(auth);
-        } finally {
-            setLoading(false);
-        }
-      } else {
-        // Not logged in.
-        setUser(null);
-        setLoading(false);
-        router.replace('/sign-in');
-      }
-    });
-
-    return () => unsubscribe();
-  }, [router]);
-
-  const signOut = async () => {
-    const app = getFirebaseApp();
-    const auth = getAuth(app);
-    await firebaseSignOut(auth);
-    // The onAuthStateChanged listener will handle the redirect to /sign-in
-  };
-
-  // While loading, show a full-page skeleton
-  if (loading) {
-    return (
-        <div className="flex h-screen w-screen items-center justify-center">
-            <div className="w-full max-w-md space-y-4 p-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
-            </div>
-        </div>
-    );
-  }
-  
-  // After loading, if there's no user, the effect will have already started the redirect.
-  // This check prevents children from rendering with a null user while redirecting.
-  if (!user) {
-    return null; // Or a loading spinner
-  }
-
-  const value = {
-    user,
-    signOut,
-    setUser: (updatedUser: UserProfile) => setUser(updatedUser),
-  };
-  
-  // If user is loaded and exists, provide context and render children
-  return (
-    <AuthContext.Provider value={value}>
-        <AppShell>{children}</AppShell>
-    </AuthContext.Provider>
-  );
-}
-
+import { useAuthContext } from '@/hooks/use-auth';
 
 // 3. Update AppLayout to use the new Provider
 export default function AppLayout({
@@ -114,9 +10,14 @@ export default function AppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { user } = useAuthContext();
+
+  // If user is not loaded yet, AuthProvider will show a loading screen.
+  // if they are loaded and not present, it will redirect.
+  // so if we are here, we have a user.
+  if (!user) return null;
+
   return (
-      <AuthProvider>
-          {children}
-      </AuthProvider>
+      <AppShell>{children}</AppShell>
   );
 }
