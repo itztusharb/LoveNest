@@ -1,10 +1,46 @@
+
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Send } from 'lucide-react';
-import { chatMessages } from '@/lib/data';
+
+const chatMessages = [
+  {
+    id: 1,
+    sender: 'partner',
+    text: 'Hey! How was your day?',
+    time: '5:01 PM',
+  },
+  {
+    id: 2,
+    sender: 'me',
+    text: 'It was great! Finally finished that big project at work.',
+    time: '5:02 PM',
+  },
+  {
+    id: 3,
+    sender: 'partner',
+    text: 'That\'s amazing! We should celebrate tonight. What are you thinking for dinner?',
+    time: '5:02 PM',
+  },
+  {
+    id: 4,
+    sender: 'me',
+    text: 'I was thinking of trying that new Italian place downtown!',
+    time: '5:03 PM',
+  },
+  {
+    id: 5,
+    sender: 'partner',
+    text: 'Perfect! I\'ll make a reservation. Can\'t wait to see you. ❤️',
+    time: '5:04 PM',
+  },
+];
+
 
 export default function ChatPage() {
   return (
