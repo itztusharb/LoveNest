@@ -3,3 +3,4 @@ import './flows/user-profile-flow';
 import './flows/auth-flow';
 import './flows/journal-flow';
 import './flows/gallery-flow';
+import './flows/notification-flow';

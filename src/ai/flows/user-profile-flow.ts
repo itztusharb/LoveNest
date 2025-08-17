@@ -14,6 +14,8 @@ import {
   updateUserProfile as updateUserProfileService,
   findUserByEmail,
   getUserProfile,
+  createLinkRequest,
+  unlinkPartners as unlinkPartnerService,
 } from '@/services/firebase';
 
 const UserProfileSchema = z.object({
@@ -43,13 +45,14 @@ export async function updateUserProfile(profile) {
 
 const LinkPartnerInputSchema = z.object({
   userId: z.string(),
+  userName: z.string(),
+  userEmail: z.string().email(),
   partnerEmail: z.string().email(),
 });
 
 const LinkPartnerOutputSchema = z.object({
   success: z.boolean(),
   message: z.string(),
-  partner: UserProfileSchema.optional(),
 });
 
 
@@ -57,7 +60,7 @@ const linkPartnerFlow = ai.defineFlow({
     name: 'linkPartnerFlow',
     inputSchema: LinkPartnerInputSchema,
     outputSchema: LinkPartnerOutputSchema,
-}, async ({ userId, partnerEmail }) => {
+}, async ({ userId, userName, userEmail, partnerEmail }) => {
     const partner = await findUserByEmail(partnerEmail);
 
     if (!partner) {
@@ -68,13 +71,20 @@ const linkPartnerFlow = ai.defineFlow({
         return { success: false, message: "You cannot link to yourself." };
     }
 
-    // Link accounts
-    await updateUserProfileService({ id: userId, partnerId: partner.id });
-    await updateUserProfileService({ id: partner.id, partnerId: userId });
+    if (partner.partnerId) {
+        return { success: false, message: 'This user is already linked with another partner.' };
+    }
 
-    const updatedPartnerProfile = await getUserProfile(partner.id);
+    // Create a link request instead of linking directly
+    await createLinkRequest({
+        fromUserId: userId,
+        fromUserName: userName,
+        fromUserEmail: userEmail,
+        toUserId: partner.id,
+    });
 
-    return { success: true, message: 'Partner linked successfully!', partner: updatedPartnerProfile };
+
+    return { success: true, message: 'A link request has been sent to your partner!' };
 });
 
 export async function linkPartner(input) {
@@ -98,4 +108,21 @@ const getPartnerProfileFlow = ai.defineFlow({
 
 export async function getPartnerProfile(userId) {
     return await getPartnerProfileFlow(userId);
+}
+
+const UnlinkPartnerInputSchema = z.object({
+    userId: z.string(),
+    partnerId: z.string(),
+});
+
+const unlinkPartnerFlow = ai.defineFlow({
+    name: 'unlinkPartnerFlow',
+    inputSchema: UnlinkPartnerInputSchema,
+    outputSchema: z.void(),
+}, async ({ userId, partnerId }) => {
+    await unlinkPartnerService(userId, partnerId);
+});
+
+export async function unlinkPartner(input) {
+    await unlinkPartnerFlow(input);
 }

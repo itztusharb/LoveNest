@@ -7,12 +7,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { updateUserProfile, linkPartner, getPartnerProfile } from '@/ai/flows/user-profile-flow';
+import { updateUserProfile, linkPartner, getPartnerProfile, unlinkPartner } from '@/ai/flows/user-profile-flow';
 import { useEffect, useState, useRef } from 'react';
 import { useAuthContext } from '@/hooks/use-auth';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PartyPopper, UserX } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthContext();
@@ -26,6 +35,7 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
+  const [isUnlinking, setIsUnlinking] = useState(false);
   const fileInputRef = useRef(null);
 
 
@@ -129,12 +139,16 @@ export default function ProfilePage() {
     }
     setIsLinking(true);
     try {
-      const result = await linkPartner({ userId: user.id, partnerEmail });
+      const result = await linkPartner({ 
+          userId: user.id, 
+          userName: user.name,
+          userEmail: user.email,
+          partnerEmail 
+      });
+
       if (result.success) {
         toast({ title: 'Success!', description: result.message });
-        setPartner(result.partner);
-        // We need to update the local user context as well
-        setUser(prevUser => ({...prevUser, partnerId: result.partner.id }));
+        setPartnerEmail('');
       } else {
         toast({ variant: 'destructive', title: 'Error', description: result.message });
       }
@@ -144,6 +158,21 @@ export default function ProfilePage() {
       setIsLinking(false);
     }
   };
+
+  const handleUnlinkPartner = async () => {
+    if (!user || !partner) return;
+    setIsUnlinking(true);
+    try {
+        await unlinkPartner({ userId: user.id, partnerId: partner.id });
+        toast({ title: 'Success!', description: 'You have unlinked from your partner.' });
+        setPartner(null);
+        setUser(prevUser => ({...prevUser, partnerId: undefined}));
+    } catch(error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to unlink partner.' });
+    } finally {
+        setIsUnlinking(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -200,16 +229,37 @@ export default function ProfilePage() {
                   </div>
                 </div>
               ) : partner ? (
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={partner.photoUrl} alt={partner.name} data-ai-hint="man smiling"/>
-                    <AvatarFallback>{partner.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="font-semibold break-words">{partner.name}</p>
-                    <p className="text-sm text-muted-foreground break-words">{partner.email}</p>
-                  </div>
-                </div>
+                 <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                        <Avatar className="h-12 w-12">
+                            <AvatarImage src={partner.photoUrl} alt={partner.name} data-ai-hint="man smiling"/>
+                            <AvatarFallback>{partner.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                            <p className="font-semibold break-words">{partner.name}</p>
+                            <p className="text-sm text-muted-foreground break-words">{partner.email}</p>
+                        </div>
+                    </div>
+                     <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" className="w-full" disabled={isUnlinking}>
+                                {isUnlinking ? 'Unlinking...' : 'Unlink Partner'}
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action will unlink you from your partner. You will no longer be able to share content. You can link again at any time.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleUnlinkPartner}>Unlink</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                 </div>
               ) : (
                 <form onSubmit={handleLinkPartner} className="space-y-4">
                     <div className="space-y-2">
@@ -217,7 +267,7 @@ export default function ProfilePage() {
                       <Input id="partnerEmail" type="email" placeholder="partner@example.com" value={partnerEmail} onChange={(e) => setPartnerEmail(e.target.value)} />
                     </div>
                     <Button className="w-full" type="submit" disabled={isLinking}>
-                      {isLinking ? 'Linking...' : 'Link Account'}
+                      {isLinking ? 'Sending Request...' : 'Link Account'}
                     </Button>
                 </form>
               )}

@@ -7,7 +7,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, limit, writeBatch } from 'firebase/firestore';
 import 'dotenv/config';
 
 
@@ -181,4 +181,107 @@ export async function getPhotos(userId) {
     });
     // Sort manually to avoid composite index requirement
     return photos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+// Notification and Linking services
+export async function createLinkRequest(request: { fromUserId: string, fromUserName: string, fromUserEmail: string, toUserId: string }) {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    const batch = writeBatch(db);
+
+    // Create the link request
+    const linkRequestRef = doc(collection(db, 'linkRequests'));
+    const linkRequest = {
+        ...request,
+        id: linkRequestRef.id,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+    };
+    batch.set(linkRequestRef, linkRequest);
+
+    // Create a notification for the recipient
+    const notificationRef = doc(collection(db, 'notifications'));
+    const notification = {
+        id: notificationRef.id,
+        userId: request.toUserId,
+        type: 'link_request',
+        data: { fromUserName: request.fromUserName, fromUserEmail: request.fromUserEmail },
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        linkRequestId: linkRequestRef.id,
+    };
+    batch.set(notificationRef, notification);
+
+    await batch.commit();
+}
+
+export async function getNotifications(userId) {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    const q = query(collection(db, 'notifications'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    const notifications = [];
+    querySnapshot.forEach((doc) => {
+        notifications.push({ id: doc.id, ...doc.data() });
+    });
+    return notifications;
+}
+
+export async function respondToLinkRequest({ linkRequestId, notificationId, response }) {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    const batch = writeBatch(db);
+
+    const linkRequestRef = doc(db, 'linkRequests', linkRequestId);
+    const notificationRef = doc(db, 'notifications', notificationId);
+
+    // Get the link request to find the user IDs
+    const linkRequestSnap = await getDoc(linkRequestRef);
+    if (!linkRequestSnap.exists()) {
+        throw new Error('Link request not found.');
+    }
+    const linkRequest = linkRequestSnap.data();
+
+    if (response === 'accepted') {
+        // Update link request status
+        batch.update(linkRequestRef, { status: 'accepted' });
+
+        // Link users
+        const user1Ref = doc(db, 'userProfiles', linkRequest.fromUserId);
+        const user2Ref = doc(db, 'userProfiles', linkRequest.toUserId);
+        batch.update(user1Ref, { partnerId: linkRequest.toUserId });
+        batch.update(user2Ref, { partnerId: linkRequest.fromUserId });
+    } else {
+        // Update link request status to declined
+        batch.update(linkRequestRef, { status: 'declined' });
+    }
+
+    // Delete the notification
+    batch.delete(notificationRef);
+    
+    await batch.commit();
+}
+
+
+export async function markNotificationAsRead(notificationId: string) {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    const notificationRef = doc(db, 'notifications', notificationId);
+    await updateDoc(notificationRef, { isRead: true });
+}
+
+export async function unlinkPartners(userId, partnerId) {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    const batch = writeBatch(db);
+    
+    const userRef = doc(db, 'userProfiles', userId);
+    const partnerRef = doc(db, 'userProfiles', partnerId);
+
+    // Use Firestore's FieldValue.delete() to remove the field
+    const { FieldValue } = await import('firebase/firestore');
+    batch.update(userRef, { partnerId: FieldValue.delete() });
+    batch.update(partnerRef, { partnerId: FieldValue.delete() });
+    
+    await batch.commit();
 }
