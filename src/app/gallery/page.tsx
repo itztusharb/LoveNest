@@ -209,8 +209,8 @@ export default function GalleryPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {[...Array(8)].map((_, i) => (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {[...Array(10)].map((_, i) => (
                 <div key={i} className="space-y-2">
                     <Skeleton className="aspect-[3/2] w-full" />
                     <Skeleton className="h-4 w-3/4" />
@@ -218,7 +218,7 @@ export default function GalleryPage() {
             ))}
         </div>
       ) : photos.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {photos.map((photo) => (
             <Card key={photo.id} className="overflow-hidden">
               <CardContent className="p-0">
