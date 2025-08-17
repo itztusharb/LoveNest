@@ -23,7 +23,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Heart } from 'lucide-react';
-import { registerUser, RegisterUserInput } from '@/ai/flows/auth-flow';
+import { registerUser } from '@/ai/flows/auth-flow';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -33,10 +33,7 @@ const formSchema = z.object({
   password: z
     .string()
     .min(6, { message: 'Password must be at least 6 characters.' }),
-  dob: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: 'Please enter a valid date of birth.',
-  }),
-  anniversary: z.string().refine((val) => !isNaN(Date.parse(val)), {
+  anniversary: z.string().refine((val) => val && !isNaN(Date.parse(val)), {
     message: 'Please enter a valid anniversary date.',
   }),
 });
@@ -52,7 +49,6 @@ export default function LoginPage() {
       name: '',
       email: '',
       password: '',
-      dob: '',
       anniversary: '',
     },
   });
@@ -63,7 +59,7 @@ export default function LoginPage() {
       await registerUser(values);
       toast({
         title: 'Account Created!',
-        description: "You've successfully created your account.",
+        description: "You've successfully created your account. Signing in...",
       });
       router.push('/');
     } catch (error: any) {
@@ -151,34 +147,19 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="dob"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Your Birthday</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="anniversary"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Anniversary</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="anniversary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Anniversary</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </Button>

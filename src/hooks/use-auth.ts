@@ -16,8 +16,15 @@ export function useAuth() {
     
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
       if (firebaseUser) {
-        const profile = await getUserProfile(firebaseUser.uid);
-        setUser(profile);
+        try {
+          const profile = await getUserProfile(firebaseUser.uid);
+          setUser(profile);
+        } catch (error) {
+          console.error("Failed to fetch user profile, signing out.", error);
+          // If we can't get a profile, something is wrong, so sign out.
+          await firebaseSignOut(auth);
+          setUser(null);
+        }
       } else {
         setUser(null);
       }

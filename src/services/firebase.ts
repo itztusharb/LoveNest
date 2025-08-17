@@ -6,11 +6,11 @@ import {
   UserCredential,
 } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
-import { UserProfile } from '@/ai/flows/user-profile-flow';
+import type { UserProfile } from '@/ai/flows/user-profile-flow';
 import 'dotenv/config';
 
 
-const clientFirebaseConfig = {
+const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -19,43 +19,18 @@ const clientFirebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const serverFirebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID,
-};
-
-function isFirebaseConfigValid(config: Record<string, string | undefined>): boolean {
-  return Object.values(config).every((value) => !!value);
-}
-
 let firebaseApp: FirebaseApp;
 
-function getFirebaseApp(): FirebaseApp {
-    if (firebaseApp) {
-        return firebaseApp;
-    }
-
-    if (getApps().length > 0) {
-        firebaseApp = getApp();
-        return firebaseApp;
-    }
-
-    const isServer = typeof window === 'undefined';
-    const config = isServer ? serverFirebaseConfig : clientFirebaseConfig;
-
-    if (isFirebaseConfigValid(config)) {
-        firebaseApp = initializeApp(config);
-        return firebaseApp;
+export function getFirebaseApp(): FirebaseApp {
+    if (getApps().length === 0) {
+        if (!firebaseConfig.apiKey) {
+            throw new Error('Missing Firebase API key');
+        }
+        firebaseApp = initializeApp(firebaseConfig);
     } else {
-        const environment = isServer ? 'Server-side' : 'Client-side';
-        const errorMessage = `${environment} Firebase config is not valid. Please check your environment variables.`;
-        console.error(errorMessage, config);
-        throw new Error(errorMessage);
+        firebaseApp = getApp();
     }
+    return firebaseApp;
 }
 
 export async function createUserWithEmail(
@@ -98,25 +73,13 @@ export async function getUserProfile(
         if (userProfileSnap.exists()) {
             return userProfileSnap.data() as UserProfile;
         } else {
-            const newUserProfile: UserProfile = {
-              id: userId,
-              name: 'User',
-              email: 'user@email.com',
-              photoUrl: 'https://placehold.co/80x80.png',
-              anniversary: '2020-07-25',
-            };
-            await setDoc(userProfileRef, newUserProfile);
-            return newUserProfile;
+            console.log(`No profile found for user ${userId}, returning null.`);
+            return null;
         }
     } catch(error) {
-        console.warn('Could not fetch user profile. This might be due to missing Firebase config. Serving mock data.', error);
-        return {
-            id: userId,
-            name: 'User',
-            email: 'user@email.com',
-            photoUrl: 'https://placehold.co/80x80.png',
-            anniversary: '2020-07-25',
-        };
+        console.error('Could not fetch user profile.', error);
+        // In case of error, we don't want to return mock data, but let the caller handle it.
+        throw error;
     }
 }
 

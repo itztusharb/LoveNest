@@ -22,7 +22,6 @@ const RegisterUserInputSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   password: z.string(),
-  dob: z.string(),
   anniversary: z.string(),
 });
 export type RegisterUserInput = z.infer<typeof RegisterUserInputSchema>;
