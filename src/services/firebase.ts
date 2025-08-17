@@ -37,7 +37,7 @@ export async function createUserWithEmail(
   password: string
 ): Promise<UserCredential> {
   if (!auth) {
-    throw new Error('Firebase Auth is not initialized.');
+    throw new Error('Firebase Auth is not initialized. Please configure your Firebase credentials.');
   }
   return await createUserWithEmailAndPassword(auth, email, password);
 }
