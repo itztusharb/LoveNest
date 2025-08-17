@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { getAuth, onAuthStateChanged, User, signOut as firebaseSignOut } from 'firebase/auth';
 import { getFirebaseApp } from '@/services/firebase';
 import { getUserProfile } from '@/services/firebase';
@@ -33,30 +33,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     if (profile) {
                         setUser(profile);
                     } else {
-                       // This case can happen if the user is created in auth but the profile document isn't.
-                       // For now, we treat it as logged out.
+                       // This can happen if the user is created in auth but the profile document isn't.
+                       // We sign them out to prevent an inconsistent state.
+                       await firebaseSignOut(auth);
                        setUser(null); 
-                       router.push('/');
                     }
                 } catch (error) {
                     console.error("Failed to fetch user profile, signing out.", error);
                     await firebaseSignOut(auth);
                     setUser(null);
-                } finally {
-                    setLoading(false);
                 }
             } else {
                 setUser(null);
-                setLoading(false);
-                const isAuthPage = pathname === '/' || pathname === '/sign-in';
-                if (!isAuthPage) {
-                    router.push('/');
-                }
             }
+            setLoading(false);
         });
 
         return () => unsubscribe();
-    }, [router, pathname]);
+    }, []);
+
+    useEffect(() => {
+        // This effect handles redirection based on auth state, but only after the initial loading is complete.
+        if (!loading) {
+            const isAuthPage = pathname === '/' || pathname === '/sign-in';
+            if (!user && !isAuthPage) {
+                // If the user is not logged in and not on an auth page, redirect to sign-up.
+                router.push('/');
+            } else if (user && isAuthPage) {
+                // If the user is logged in and on an auth page, redirect to the dashboard.
+                router.push('/dashboard');
+            }
+        }
+    }, [user, loading, pathname, router]);
 
     const signOut = async () => {
         const app = getFirebaseApp();
