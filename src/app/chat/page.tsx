@@ -81,7 +81,7 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-        <div className="flex h-[calc(100vh-8rem)] flex-col border rounded-lg">
+        <div className="flex flex-1 self-stretch flex-col border rounded-lg">
             <div className="flex items-center gap-4 border-b p-4">
                 <Skeleton className="h-10 w-10 rounded-full" />
                 <div className="space-y-1">
@@ -112,7 +112,7 @@ export default function ChatPage() {
 
   if (!partner) {
      return (
-        <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center rounded-lg border-2 border-dashed">
+        <div className="flex flex-1 self-stretch flex-col items-center justify-center text-center rounded-lg border-2 border-dashed">
             <MessagesSquare className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-4 text-lg font-semibold">No Partner Linked</h3>
             <p className="mt-2 text-sm text-muted-foreground">Link with a partner on your profile page to start chatting.</p>
@@ -121,7 +121,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col border rounded-lg">
+    <div className="flex flex-1 self-stretch flex-col border rounded-lg">
       <div className="flex items-center gap-4 border-b p-4">
         <Avatar>
           <AvatarImage src={partner.photoUrl} alt={partner.name} data-ai-hint="person smiling" />
