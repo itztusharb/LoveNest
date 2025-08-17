@@ -44,9 +44,11 @@ function AuthProvider({ children }: { children: ReactNode }) {
           if (profile) {
             setUser(profile);
           } else {
-            console.error("Profile not found for authenticated user. Signing out.");
-            await firebaseSignOut(auth);
-            // The onAuthStateChanged listener will handle the user=null case below
+            // This can happen if the user document hasn't been created yet.
+            // For now, we'll treat it as a "not logged in" state.
+             console.error("Profile not found for authenticated user, signing out.");
+             await firebaseSignOut(auth);
+             // The listener will re-run with firebaseUser = null
           }
         } catch (error) {
           console.error("Failed to fetch user profile, signing out.", error);
@@ -69,7 +71,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     const app = getFirebaseApp();
     const auth = getAuth(app);
     await firebaseSignOut(auth);
-    // onAuthStateChanged will redirect to /sign-in
+    // The onAuthStateChanged listener will handle the redirect to /sign-in
   };
 
   // While loading, show a full-page skeleton
@@ -85,10 +87,10 @@ function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
   
-  // After loading, if there's no user, the effect will have already redirected.
+  // After loading, if there's no user, the effect will have already started the redirect.
   // This check prevents children from rendering with a null user while redirecting.
   if (!user) {
-    return null; 
+    return null; // Or a loading spinner
   }
 
   const value = {
