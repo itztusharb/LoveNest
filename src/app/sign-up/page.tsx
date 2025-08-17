@@ -62,8 +62,8 @@ export default function SignUpPage() {
         title: 'Account Created!',
         description: "You've successfully created your account. Signing in...",
       });
-      // Redirect to the root, which will handle routing to the dashboard.
-      router.push('/');
+      // Redirect to the dashboard after successful registration.
+      router.replace('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',
