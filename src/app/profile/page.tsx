@@ -205,9 +205,9 @@ export default function ProfilePage() {
                     <AvatarImage src={partner.photoUrl} alt={partner.name} data-ai-hint="man smiling"/>
                     <AvatarFallback>{partner.name.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="font-semibold">{partner.name}</p>
-                    <p className="text-sm text-muted-foreground">{partner.email}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold break-words">{partner.name}</p>
+                    <p className="text-sm text-muted-foreground break-words">{partner.email}</p>
                   </div>
                 </div>
               ) : (
