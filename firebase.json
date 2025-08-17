@@ -1,0 +1,12 @@
+{
+  "$schema": "https://firebase.google.com/schema/firebase-config.json",
+  "apphosting": {
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "postinstall": "npm ci"
+  }
+}
