@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { updateUserProfile } from '@/ai/flows/user-profile-flow';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuthContext } from '@/hooks/use-auth';
 
 export default function ProfilePage() {
@@ -17,6 +17,9 @@ export default function ProfilePage() {
   const [anniversary, setAnniversary] = useState('');
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
 
   useEffect(() => {
     if (user) {
@@ -36,6 +39,38 @@ export default function ProfilePage() {
   if (!user) {
     return null;
   }
+  
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file && user) {
+      setIsUploading(true);
+      try {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = async () => {
+          const base64String = reader.result;
+          const updatedProfile = {
+            ...user,
+            photoUrl: base64String,
+          };
+          await updateUserProfile(updatedProfile);
+          setUser(updatedProfile);
+          toast({
+            title: 'Success!',
+            description: 'Your photo has been updated.',
+          });
+        };
+      } catch (error) {
+         toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to update photo.',
+        });
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,7 +121,21 @@ export default function ProfilePage() {
                   <p className="text-xl font-semibold">{user.name}</p>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
               </div>
-              <Button variant="outline" className="w-full">Change Photo</Button>
+                <Input 
+                    type="file" 
+                    className="hidden" 
+                    ref={fileInputRef} 
+                    onChange={handleFileChange}
+                    accept="image/*"
+                />
+                <Button 
+                    variant="outline" 
+                    className="w-full"
+                    disabled={isUploading}
+                    onClick={() => fileInputRef.current?.click()}
+                >
+                    {isUploading ? "Uploading..." : "Change Photo"}
+                </Button>
             </CardContent>
           </Card>
         </div>
