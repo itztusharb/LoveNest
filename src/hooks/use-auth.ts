@@ -38,7 +38,7 @@ export function useAuth() {
     const app = getFirebaseApp();
     const auth = getAuth(app);
     await firebaseSignOut(auth);
-    router.push('/login');
+    router.push('/');
   };
 
   return { user, loading, signOut };

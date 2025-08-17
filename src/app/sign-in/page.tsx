@@ -23,22 +23,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Heart } from 'lucide-react';
-import { registerUser } from '@/ai/flows/auth-flow';
+import { signInUser } from '@/ai/flows/auth-flow';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
-  password: z
-    .string()
-    .min(6, { message: 'Password must be at least 6 characters.' }),
-  anniversary: z.string().refine((val) => val && !isNaN(Date.parse(val)), {
-    message: 'Please enter a valid anniversary date.',
-  }),
+  password: z.string(),
 });
 
-export default function SignUpPage() {
+export default function SignInPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -46,27 +40,26 @@ export default function SignUpPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
       email: '',
       password: '',
-      anniversary: '',
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await registerUser(values);
+      await signInUser(values);
       toast({
-        title: 'Account Created!',
-        description: "You've successfully created your account. Signing in...",
+        title: 'Signed In!',
+        description: 'Welcome back!',
       });
       router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
-        description: error.message || 'There was a problem with your request.',
+        description:
+          error.message || 'There was a problem with your request.',
       });
     } finally {
       setIsLoading(false);
@@ -79,41 +72,28 @@ export default function SignUpPage() {
         <div>
             <Heart className="mx-auto h-12 w-auto text-primary" />
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-foreground">
-            Create your Lovebirds account
+            Sign in to your Lovebirds account
             </h2>
             <p className="mt-2 text-center text-sm text-muted-foreground">
             Or{' '}
             <Link
-                href="/sign-in"
+                href="/"
                 className="font-medium text-primary hover:text-primary/90"
             >
-                sign in to your existing account
+                create a new account
             </Link>
             </p>
         </div>
         <Card>
             <CardHeader>
-            <CardTitle>Sign Up</CardTitle>
+            <CardTitle>Sign In</CardTitle>
             <CardDescription>
-                Enter your details to create a shared space for you and your partner.
+                Enter your credentials to access your account.
             </CardDescription>
             </CardHeader>
             <CardContent>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Your Name</FormLabel>
-                        <FormControl>
-                        <Input placeholder="Enter your name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
                 <FormField
                     control={form.control}
                     name="email"
@@ -148,21 +128,8 @@ export default function SignUpPage() {
                     </FormItem>
                     )}
                 />
-                <FormField
-                    control={form.control}
-                    name="anniversary"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Anniversary</FormLabel>
-                        <FormControl>
-                        <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Creating Account...' : 'Create Account'}
+                    {isLoading ? 'Signing In...' : 'Sign In'}
                 </Button>
                 </form>
             </Form>

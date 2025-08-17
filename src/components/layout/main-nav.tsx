@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 const links = [
-  { href: '/', label: 'Dashboard', icon: Home },
+  { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/gallery', label: 'Photo Gallery', icon: Camera },
   { href: '/journal', label: 'Shared Journal', icon: BookText },
   { href: '/chat', label: 'Live Chat', icon: MessagesSquare },

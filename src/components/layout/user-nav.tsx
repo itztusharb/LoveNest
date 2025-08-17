@@ -60,7 +60,7 @@ export function UserNav() {
             </DropdownMenuItem>
           </>
         ) : (
-          <Link href="/login">
+          <Link href="/">
             <DropdownMenuItem>
               <LogIn className="mr-2 h-4 w-4" />
               <span>Login / Sign Up</span>
