@@ -151,50 +151,48 @@ export default function GalleryPage() {
               Upload Photo
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Upload a new photo</DialogTitle>
               <DialogDescription>
                 Share a new memory with your partner.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleUpload}>
-              <div className="grid gap-4 py-4">
-                 <div className="space-y-2">
-                  <Label>Photo</Label>
-                   {preview ? (
-                     <div className="relative">
-                       <Image src={preview} alt="Image preview" width={400} height={250} className="w-full h-auto rounded-md" />
-                       <Button type="button" size="icon" variant="destructive" className="absolute top-2 right-2 h-6 w-6" onClick={() => {
-                         setPreview(null);
-                         setFile(null);
-                         if (fileInputRef.current) fileInputRef.current.value = '';
-                       }}>
-                         <X className="h-4 w-4" />
-                       </Button>
-                     </div>
-                   ) : (
-                    <div className="flex items-center justify-center w-full">
-                      <Label htmlFor="photo-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted">
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                              <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
-                              <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                              <p className="text-xs text-muted-foreground">PNG, JPG or GIF</p>
-                          </div>
-                          <Input id="photo-upload" type="file" className="hidden" onChange={handleFileChange} accept="image/*" ref={fileInputRef}/>
-                      </Label>
-                    </div> 
-                  )}
-                 </div>
+            <form onSubmit={handleUpload} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="caption">Caption</Label>
-                  <Textarea id="caption" value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="A lovely day at the beach." />
+                <Label>Photo</Label>
+                {preview ? (
+                    <div className="relative">
+                    <Image src={preview} alt="Image preview" width={400} height={250} className="w-full h-auto rounded-md object-contain max-h-80" />
+                    <Button type="button" size="icon" variant="destructive" className="absolute top-2 right-2 h-6 w-6" onClick={() => {
+                        setPreview(null);
+                        setFile(null);
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                    </div>
+                ) : (
+                <div className="flex items-center justify-center w-full">
+                    <Label htmlFor="photo-upload" className="flex flex-col items-center justify-center w-full h-32 sm:h-48 md:h-64 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
+                            <p className="mb-2 text-sm text-center text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                            <p className="text-xs text-muted-foreground">PNG, JPG, or GIF</p>
+                        </div>
+                        <Input id="photo-upload" type="file" className="hidden" onChange={handleFileChange} accept="image/*" ref={fileInputRef}/>
+                    </Label>
+                </div> 
+                )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="hint">AI Hint</Label>
-                  <Input id="hint" value={hint} onChange={(e) => setHint(e.target.value)} placeholder="e.g. 'beach sunset'" />
+                    <Label htmlFor="caption">Caption</Label>
+                    <Textarea id="caption" value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="A lovely day at the beach." />
                 </div>
-              </div>
+                <div className="space-y-2">
+                    <Label htmlFor="hint">AI Hint</Label>
+                    <Input id="hint" value={hint} onChange={(e) => setHint(e.target.value)} placeholder="e.g. 'beach sunset'" />
+                </div>
               <DialogFooter>
                 <DialogClose asChild>
                   <Button type="button" variant="outline">Cancel</Button>
