@@ -58,7 +58,9 @@ export default function ChatPage() {
     
     // Periodically refresh partner data to update 'lastSeen'
     const intervalId = setInterval(() => {
-        fetchPartnerAndChat();
+        if (user && user.partnerId) {
+            fetchPartnerAndChat();
+        }
     }, 60000); // every minute
 
     return () => {
@@ -67,7 +69,7 @@ export default function ChatPage() {
       }
       clearInterval(intervalId);
     };
-  }, [chatId]);
+  }, [chatId, user]);
 
 
   useEffect(() => {
@@ -108,6 +110,10 @@ export default function ChatPage() {
     return <span className="text-sm text-muted-foreground">Last seen {formatDistanceToNowStrict(lastSeenDate, { addSuffix: true })}</span>;
   }
 
+  if (!user) {
+    return null; // Don't render anything if user is not available yet
+  }
+  
   if (loading) {
     return (
         <div className="flex flex-1 self-stretch flex-col border rounded-lg">
