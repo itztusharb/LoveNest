@@ -1,7 +1,6 @@
 
 "use client";
 
-import { AppShell } from '@/components/app-shell';
 import { useAuthContext } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -29,5 +28,5 @@ export default function AppLayout({ children }) {
     );
   }
 
-  return <AppShell>{children}</AppShell>;
+  return <>{children}</>;
 }

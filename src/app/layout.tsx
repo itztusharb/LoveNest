@@ -3,10 +3,11 @@
 
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext } from 'react';
 import { getAuth, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { getFirebaseApp, getUserProfile } from '@/services/firebase';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { AppShell } from '@/components/app-shell';
 
 export const AuthContext = createContext(undefined);
 
@@ -66,6 +67,17 @@ function AuthProvider({ children }) {
   );
 }
 
+function ConditionalLayout({ children }) {
+    const pathname = usePathname();
+    const noShellRoutes = ['/sign-in', '/'];
+
+    if (noShellRoutes.includes(pathname)) {
+        return <>{children}</>;
+    }
+
+    return <AppShell>{children}</AppShell>;
+}
+
 
 export default function RootLayout({
   children,
@@ -86,8 +98,10 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          {children}
-          <Toaster />
+            <ConditionalLayout>
+                {children}
+            </ConditionalLayout>
+            <Toaster />
         </AuthProvider>
       </body>
     </html>
