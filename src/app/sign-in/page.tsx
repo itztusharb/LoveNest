@@ -53,28 +53,16 @@ export default function SignInPage() {
     setIsLoading(true);
     try {
       await signInWithGoogle();
-      toast({
-        title: 'Signed In!',
-        description: 'Welcome to LoveNest!',
-      });
-      router.replace('/');
+      // The redirect is handled by the AuthProvider, so we don't need to do anything here.
+      // We show a loading state to the user.
     } catch (error: any) {
       console.error("Google Sign-In Error", error);
-      if (error.code === 'auth/popup-closed-by-user') {
-         toast({
-            variant: 'destructive',
-            title: 'Sign-in Cancelled',
-            description: 'You closed the sign-in window. Please try again.',
-        });
-      } else {
         toast({
             variant: 'destructive',
             title: 'Uh oh! Something went wrong.',
             description:
             error.message || 'There was a problem with your Google Sign-In request.',
         });
-      }
-    } finally {
       setIsLoading(false);
     }
   }
@@ -107,7 +95,7 @@ export default function SignInPage() {
                         variant="outline"
                     >
                         {isLoading ? (
-                            'Signing In...'
+                            'Redirecting to Google...'
                         ) : (
                             <>
                                 <GoogleIcon className="mr-2" />

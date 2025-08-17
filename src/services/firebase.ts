@@ -5,7 +5,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, writeBatch, updateDoc, deleteField, FieldValue, onSnapshot, orderBy, serverTimestamp } from 'firebase/firestore';
@@ -59,31 +60,36 @@ export async function signInWithGoogle() {
   const provider = new GoogleAuthProvider();
 
   try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-
-    // Check if user profile already exists
-    const profile = await getUserProfile(user.uid);
-    
-    if (!profile) {
-      // If profile doesn't exist, create it
-      await createUserProfile({
-        id: user.uid,
-        name: user.displayName,
-        email: user.email,
-        photoUrl: user.photoURL,
-      });
-    } else {
-      // If profile exists, update last seen
-      await updateUserLastSeen(user.uid);
-    }
-    
-    return result;
-
+    await signInWithRedirect(auth, provider);
   } catch(error) {
-    console.error("Error during Google sign-in:", error);
+    console.error("Error during Google sign-in redirect:", error);
     throw error;
   }
+}
+
+export async function handleRedirectResult(auth) {
+    try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+            const user = result.user;
+            const profile = await getUserProfile(user.uid);
+            if (!profile) {
+                await createUserProfile({
+                    id: user.uid,
+                    name: user.displayName,
+                    email: user.email,
+                    photoUrl: user.photoURL,
+                });
+            } else {
+                await updateUserLastSeen(user.uid);
+            }
+            return result;
+        }
+        return null;
+    } catch(error) {
+        console.error("Error handling redirect result:", error);
+        throw error;
+    }
 }
 
 export async function createUserWithEmail(
