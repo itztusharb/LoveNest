@@ -8,7 +8,7 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, writeBatch, updateDoc, deleteField, FieldValue, onSnapshot, orderBy, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, writeBatch, updateDoc, deleteField, FieldValue, onSnapshot, orderBy, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import 'dotenv/config';
 
 
@@ -355,4 +355,29 @@ export function getChatMessages(chatId: string, callback: (messages: any[]) => v
     });
 
     return unsubscribe;
+}
+
+// Reminder services
+export async function addReminder(reminder) {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    await addDoc(collection(db, 'reminders'), reminder);
+}
+
+export async function getReminders(userId: string) {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    const q = query(collection(db, 'reminders'), where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+    const reminders = [];
+    querySnapshot.forEach((doc) => {
+        reminders.push({ id: doc.id, ...doc.data() });
+    });
+    return reminders;
+}
+
+export async function deleteReminder(reminderId: string) {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    await deleteDoc(doc(db, 'reminders', reminderId));
 }

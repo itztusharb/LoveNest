@@ -15,7 +15,7 @@ import {
   Camera,
   BookText,
   MessagesSquare,
-  CalendarHeart,
+  Bell,
 } from 'lucide-react';
 
 const links = [
@@ -23,7 +23,7 @@ const links = [
   { href: '/gallery', label: 'Photo Gallery', icon: Camera },
   { href: '/journal', label: 'Shared Journal', icon: BookText },
   { href: '/chat', label: 'Live Chat', icon: MessagesSquare },
-  { href: '/reminders', label: 'Reminders', icon: CalendarHeart },
+  { href: '/reminders', label: 'Reminders', icon: Bell },
 ];
 
 export function MainNav() {

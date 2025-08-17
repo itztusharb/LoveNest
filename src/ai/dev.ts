@@ -5,3 +5,4 @@ import './flows/journal-flow';
 import './flows/gallery-flow';
 import './flows/notification-flow';
 import './flows/chat-flow';
+import './flows/reminder-flow';
