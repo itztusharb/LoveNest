@@ -44,7 +44,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
           if (profile) {
             setUser(profile);
           } else {
-            // Profile doesn't exist, force sign out
+            // Profile doesn't exist, this is an invalid state, force sign out.
             await firebaseSignOut(auth);
             setUser(null);
             router.push('/');
@@ -54,13 +54,15 @@ function AuthProvider({ children }: { children: ReactNode }) {
           await firebaseSignOut(auth);
           setUser(null);
           router.push('/');
+        } finally {
+            setLoading(false);
         }
       } else {
+        // Not logged in.
         setUser(null);
-        // Not logged in, redirect to sign-in page
+        setLoading(false);
         router.push('/');
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -87,8 +89,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
   
-  // After loading, if there's no user, redirect (though useEffect handles this)
-  // This prevents children from rendering with null user
+  // After loading, if there's no user, redirect has already been triggered by useEffect.
+  // This check prevents children from rendering with a null user.
   if (!user) {
     return null; 
   }
