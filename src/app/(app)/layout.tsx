@@ -46,7 +46,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
           } else {
             console.error("Profile not found for authenticated user. Signing out.");
             await firebaseSignOut(auth);
-            // The onAuthStateChanged listener will handle the user=null case
+            // The onAuthStateChanged listener will handle the user=null case below
           }
         } catch (error) {
           console.error("Failed to fetch user profile, signing out.", error);
