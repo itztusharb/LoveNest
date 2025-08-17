@@ -12,8 +12,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProfilePage() {
-  const { user, loading: authLoading, setUser: setAuthUser } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const { user, loading: authLoading, setUser } = useAuth();
   const [name, setName] = useState('');
   const [anniversary, setAnniversary] = useState('');
   const { toast } = useToast();
@@ -21,12 +20,12 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user) {
-      setProfile(user);
       setName(user.name);
       // Ensure anniversary is in 'yyyy-MM-dd' format for the input
       const annivDate = user.anniversary ? new Date(user.anniversary) : null;
+      // Adjust for timezone differences
       const formattedAnniversary = annivDate 
-        ? `${annivDate.getFullYear()}-${String(annivDate.getMonth() + 1).padStart(2, '0')}-${String(annivDate.getDate()).padStart(2, '0')}`
+        ? new Date(annivDate.getTime() - annivDate.getTimezoneOffset() * 60000).toISOString().split('T')[0]
         : '';
       setAnniversary(formattedAnniversary);
     }
@@ -34,18 +33,17 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (profile) {
+    if (user) {
       setIsSaving(true);
       try {
-        const updatedProfile = {
-          ...profile,
+        const updatedProfile: UserProfile = {
+          ...user,
           name,
           anniversary,
         };
         await updateUserProfile(updatedProfile);
         // Update the user in the global auth context
-        setAuthUser(updatedProfile);
-        setProfile(updatedProfile); // Update local state
+        setUser(updatedProfile);
         toast({
           title: 'Success!',
           description: 'Your profile has been updated.',
@@ -62,7 +60,7 @@ export default function ProfilePage() {
     }
   };
   
-  if (authLoading || !profile) {
+  if (authLoading || !user) {
     return <ProfileSkeleton />;
   }
 
@@ -82,7 +80,7 @@ export default function ProfilePage() {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={profile.photoUrl} alt="@user" data-ai-hint="woman smiling"/>
+                <AvatarImage src={user.photoUrl} alt="@user" data-ai-hint="woman smiling"/>
                 <AvatarFallback>{name.charAt(0)}</AvatarFallback>
               </Avatar>
               <Button variant="outline" type="button">Change Photo</Button>
@@ -93,7 +91,7 @@ export default function ProfilePage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue={profile.email} disabled />
+              <Input id="email" type="email" defaultValue={user.email} disabled />
             </div>
             <div className="space-y-2">
               <Label htmlFor="anniversary">Relationship Anniversary</Label>
