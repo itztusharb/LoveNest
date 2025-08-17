@@ -14,7 +14,18 @@ import { usePathname } from 'next/navigation';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isChatPage = pathname.includes('/chat');
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  const noShellRoutes = ['/sign-in', '/'];
+  if (noShellRoutes.includes(pathname)) {
+      return <>{children}</>;
+  }
+
+  const isChatPage = isClient && pathname.includes('/chat');
 
   return (
     <SidebarProvider>

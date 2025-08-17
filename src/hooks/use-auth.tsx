@@ -1,6 +1,6 @@
 
 import { useContext } from 'react';
-import { AuthContext } from '@/app/layout';
+import { AuthContext } from '@/components/auth-provider';
 
 // Custom hook to use the AuthContext
 export function useAuthContext() {
