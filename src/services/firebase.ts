@@ -5,8 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, writeBatch, updateDoc, deleteField, FieldValue, onSnapshot, orderBy, serverTimestamp } from 'firebase/firestore';
@@ -60,36 +59,24 @@ export async function signInWithGoogle() {
   const provider = new GoogleAuthProvider();
 
   try {
-    await signInWithRedirect(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    const profile = await getUserProfile(user.uid);
+    if (!profile) {
+        await createUserProfile({
+            id: user.uid,
+            name: user.displayName,
+            email: user.email,
+            photoUrl: user.photoURL,
+        });
+    } else {
+      await updateUserLastSeen(user.uid);
+    }
+    return result;
   } catch(error) {
-    console.error("Error during Google sign-in redirect:", error);
+    console.error("Error during Google sign-in:", error);
     throw error;
   }
-}
-
-export async function handleRedirectResult(auth) {
-    try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-            const user = result.user;
-            const profile = await getUserProfile(user.uid);
-            if (!profile) {
-                await createUserProfile({
-                    id: user.uid,
-                    name: user.displayName,
-                    email: user.email,
-                    photoUrl: user.photoURL,
-                });
-            } else {
-                await updateUserLastSeen(user.uid);
-            }
-            return result;
-        }
-        return null;
-    } catch(error) {
-        console.error("Error handling redirect result:", error);
-        throw error;
-    }
 }
 
 export async function createUserWithEmail(

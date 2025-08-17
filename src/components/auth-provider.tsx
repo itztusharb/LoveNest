@@ -3,7 +3,7 @@
 
 import { useState, useEffect, createContext } from 'react';
 import { getAuth, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
-import { getFirebaseApp, getUserProfile, createUserProfile, updateUserLastSeen, handleRedirectResult } from '@/services/firebase';
+import { getFirebaseApp, getUserProfile, createUserProfile, updateUserLastSeen } from '@/services/firebase';
 import { useRouter } from 'next/navigation';
 
 export const AuthContext = createContext<{
@@ -22,15 +22,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const app = getFirebaseApp();
     const auth = getAuth(app);
     
-    handleRedirectResult(auth).then((result) => {
-        if (result) {
-            // User signed in via redirect
-            router.replace('/');
-        }
-    }).catch((error) => {
-        console.error("Error handling redirect result in AuthProvider", error);
-    });
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setLoading(true);
       if (firebaseUser) {

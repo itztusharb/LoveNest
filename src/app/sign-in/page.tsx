@@ -53,17 +53,25 @@ export default function SignInPage() {
     setIsLoading(true);
     try {
       await signInWithGoogle();
-      // The redirect is handled by the AuthProvider, so we don't need to do anything here.
-      // We show a loading state to the user.
+      router.replace('/');
     } catch (error: any) {
       console.error("Google Sign-In Error", error);
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast({
+            variant: 'default',
+            title: 'Sign-in cancelled',
+            description: 'You closed the sign-in window. Please try again.',
+        });
+      } else {
         toast({
             variant: 'destructive',
             title: 'Uh oh! Something went wrong.',
             description:
             error.message || 'There was a problem with your Google Sign-In request.',
         });
-      setIsLoading(false);
+      }
+    } finally {
+        setIsLoading(false);
     }
   }
 
@@ -95,7 +103,7 @@ export default function SignInPage() {
                         variant="outline"
                     >
                         {isLoading ? (
-                            'Redirecting to Google...'
+                            'Opening Google Sign-in...'
                         ) : (
                             <>
                                 <GoogleIcon className="mr-2" />
