@@ -13,7 +13,9 @@ import { getPartnerProfile } from '@/ai/flows/user-profile-flow';
 import { addChatMessage, getChatId } from '@/ai/flows/chat-flow';
 import { getChatMessages } from '@/services/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format } from 'date-fns';
+import { format, formatDistanceToNowStrict } from 'date-fns';
+
+const FIVE_MINUTES = 5 * 60 * 1000;
 
 export default function ChatPage() {
   const { user } = useAuthContext();
@@ -25,35 +27,48 @@ export default function ChatPage() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
 
+  const fetchPartnerAndChat = async () => {
+    if (user && user.partnerId) {
+      try {
+        const partnerProfile = await getPartnerProfile(user.id);
+        setPartner(partnerProfile);
+        const id = await getChatId({ userId1: user.id, userId2: user.partnerId });
+        setChatId(id);
+      } catch (error) {
+        console.error("Failed to fetch partner or chat info", error);
+      }
+    }
+    setLoading(false);
+  };
+  
   useEffect(() => {
     if (user) {
-      const fetchPartnerAndChat = async () => {
-        setLoading(true);
-        try {
-          if (user.partnerId) {
-            const partnerProfile = await getPartnerProfile(user.id);
-            setPartner(partnerProfile);
-            const id = await getChatId({ userId1: user.id, userId2: user.partnerId });
-            setChatId(id);
-          }
-        } catch (error) {
-          console.error("Failed to fetch partner or chat info", error);
-        } finally {
-          setLoading(false);
-        }
-      };
+      setLoading(true);
       fetchPartnerAndChat();
     }
   }, [user]);
 
   useEffect(() => {
+    let unsubscribeMessages: () => void | undefined;
     if (chatId) {
-      const unsubscribe = getChatMessages(chatId, (newMessages) => {
+      unsubscribeMessages = getChatMessages(chatId, (newMessages) => {
         setMessages(newMessages);
       });
-      return () => unsubscribe();
     }
+    
+    // Periodically refresh partner data to update 'lastSeen'
+    const intervalId = setInterval(() => {
+        fetchPartnerAndChat();
+    }, 60000); // every minute
+
+    return () => {
+      if (unsubscribeMessages) {
+        unsubscribeMessages();
+      }
+      clearInterval(intervalId);
+    };
   }, [chatId]);
+
 
   useEffect(() => {
     // Scroll to bottom when messages change
@@ -78,6 +93,20 @@ export default function ChatPage() {
       console.error('Failed to send message', error);
     }
   };
+
+  const getPartnerStatus = () => {
+    if (!partner || !partner.lastSeen) return <span className="text-sm text-muted-foreground">Offline</span>;
+
+    const lastSeenDate = new Date(partner.lastSeen);
+    const now = new Date();
+    const isOnline = now.getTime() - lastSeenDate.getTime() < FIVE_MINUTES;
+
+    if (isOnline) {
+      return <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-green-500"/><span className="text-sm text-muted-foreground">Online</span></div>;
+    }
+
+    return <span className="text-sm text-muted-foreground">Last seen {formatDistanceToNowStrict(lastSeenDate, { addSuffix: true })}</span>;
+  }
 
   if (loading) {
     return (
@@ -129,7 +158,7 @@ export default function ChatPage() {
         </Avatar>
         <div>
           <h2 className="font-semibold">{partner.name}</h2>
-          <p className="text-sm text-muted-foreground">Online</p>
+          {getPartnerStatus()}
         </div>
       </div>
       <ScrollArea className="flex-1" ref={scrollAreaRef}>

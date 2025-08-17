@@ -39,10 +39,18 @@ export async function createUserProfile(profileData) {
     const profile = {
         anniversary: null,
         partnerId: null,
+        lastSeen: new Date().toISOString(),
         ...profileData
     };
     await updateUserProfile(profile);
     return profile;
+}
+
+export async function updateUserLastSeen(userId: string) {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    const userProfileRef = doc(db, 'userProfiles', userId);
+    await updateDoc(userProfileRef, { lastSeen: new Date().toISOString() });
 }
 
 export async function signInWithGoogle() {
@@ -65,6 +73,9 @@ export async function signInWithGoogle() {
         email: user.email,
         photoUrl: user.photoURL,
       });
+    } else {
+      // If profile exists, update last seen
+      await updateUserLastSeen(user.uid);
     }
     
     return result;
@@ -319,11 +330,21 @@ export async function getOrCreateChatId(userId1: string, userId2: string): Promi
 export async function addChatMessage(chatId: string, message: { senderId: string, text: string }) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
+    const batch = writeBatch(db);
+    
+    // Add the message
     const messagesRef = collection(db, 'chats', chatId, 'messages');
-    await addDoc(messagesRef, {
+    const messageDocRef = doc(messagesRef); // Auto-generate ID
+    batch.set(messageDocRef, {
         ...message,
         createdAt: new Date().toISOString(),
     });
+
+    // Update the sender's lastSeen timestamp
+    const userProfileRef = doc(db, 'userProfiles', message.senderId);
+    batch.update(userProfileRef, { lastSeen: new Date().toISOString() });
+    
+    await batch.commit();
 }
 
 export function getChatMessages(chatId: string, callback: (messages: any[]) => void) {

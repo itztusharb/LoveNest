@@ -10,6 +10,7 @@ import { z } from 'genkit';
 import {
   addChatMessage as addChatMessageService,
   getOrCreateChatId,
+  updateUserLastSeen,
 } from '@/services/firebase';
 import { AddChatMessageInputSchema, ChatMessageSchema } from '@/ai/schemas/chat-schema';
 import type { AddChatMessageInput, ChatMessage } from '@/ai/schemas/chat-schema';

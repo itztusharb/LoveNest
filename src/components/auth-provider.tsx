@@ -3,7 +3,7 @@
 
 import { useState, useEffect, createContext } from 'react';
 import { getAuth, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
-import { getFirebaseApp, getUserProfile, createUserProfile } from '@/services/firebase';
+import { getFirebaseApp, getUserProfile, createUserProfile, updateUserLastSeen } from '@/services/firebase';
 import { useRouter } from 'next/navigation';
 
 export const AuthContext = createContext<{
@@ -30,16 +30,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           if (!profile) {
             console.log("Profile not found for authenticated user, creating one.");
-            // This can happen if the user exists in Auth but not in Firestore,
-            // for example if they are a new user. We create the profile here.
             profile = await createUserProfile({
               id: firebaseUser.uid,
               name: firebaseUser.displayName || 'New User',
               email: firebaseUser.email,
               photoUrl: firebaseUser.photoURL || `https://placehold.co/80x80.png?text=${firebaseUser.email?.charAt(0).toUpperCase() || 'U'}`,
               anniversary: null,
-              partnerId: null,
             });
+          } else {
+             await updateUserLastSeen(firebaseUser.uid);
           }
           setUser(profile);
 
