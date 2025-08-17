@@ -11,6 +11,7 @@ import {
   addReminder as addReminderService,
   getReminders as getRemindersService,
   deleteReminder as deleteReminderService,
+  getUserProfile,
 } from '@/services/firebase';
 import { ReminderSchema, AddReminderInputSchema } from '@/ai/schemas/reminder-schema';
 import type { Reminder, AddReminderInput } from '@/ai/schemas/reminder-schema';
@@ -37,7 +38,12 @@ const getRemindersFlow = ai.defineFlow(
     outputSchema: z.array(ReminderSchema),
   },
   async (userId) => {
-    return await getRemindersService(userId);
+    const userProfile = await getUserProfile(userId);
+    const userIdsToFetch = [userId];
+    if (userProfile?.partnerId) {
+        userIdsToFetch.push(userProfile.partnerId);
+    }
+    return await getRemindersService(userIdsToFetch);
   }
 );
 

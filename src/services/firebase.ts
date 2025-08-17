@@ -364,10 +364,13 @@ export async function addReminder(reminder) {
     await addDoc(collection(db, 'reminders'), reminder);
 }
 
-export async function getReminders(userId: string) {
+export async function getReminders(userIds: string[]) {
+    if (!userIds || userIds.length === 0) {
+        return [];
+    }
     const app = getFirebaseApp();
     const db = getFirestore(app);
-    const q = query(collection(db, 'reminders'), where('userId', '==', userId));
+    const q = query(collection(db, 'reminders'), where('userId', 'in', userIds));
     const querySnapshot = await getDocs(q);
     const reminders = [];
     querySnapshot.forEach((doc) => {
