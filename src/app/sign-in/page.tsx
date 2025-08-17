@@ -53,8 +53,7 @@ export default function SignInPage() {
         title: 'Signed In!',
         description: 'Welcome back!',
       });
-      // Redirect to the app root which will handle loading and redirecting to dashboard
-      router.push('/');
+      router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',

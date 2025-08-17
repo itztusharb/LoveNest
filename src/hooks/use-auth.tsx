@@ -30,6 +30,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 try {
                     const profile = await getUserProfile(firebaseUser.uid);
                     setUser(profile);
+                    // Redirect to dashboard if they are on a public page
+                    if (window.location.pathname === '/' || window.location.pathname === '/sign-in') {
+                         router.push('/dashboard');
+                    }
                 } catch (error) {
                     console.error("Failed to fetch user profile, signing out.", error);
                     await firebaseSignOut(auth);
@@ -42,13 +46,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [router]);
 
     const signOut = async () => {
         const app = getFirebaseApp();
         const auth = getAuth(app);
         await firebaseSignOut(auth);
-        setUser(null); // Clear user state on sign out
+        setUser(null);
         router.push('/');
     };
 
