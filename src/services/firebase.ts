@@ -132,13 +132,14 @@ export async function addJournalEntry(entry) {
 export async function getJournalEntries(userId) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
-    const q = query(collection(db, 'journalEntries'), where('userId', '==', userId), orderBy('date', 'desc'));
+    const q = query(collection(db, 'journalEntries'), where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
     const entries = [];
     querySnapshot.forEach((doc) => {
         entries.push({ id: doc.id, ...doc.data() });
     });
-    return entries;
+    // Sort manually to avoid composite index requirement
+    return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 export async function addPhoto(photo) {
@@ -153,11 +154,12 @@ export async function addPhoto(photo) {
 export async function getPhotos(userId) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
-    const q = query(collection(db, 'photos'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'photos'), where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
     const photos = [];
     querySnapshot.forEach((doc) => {
         photos.push({ id: doc.id, ...doc.data() });
     });
-    return photos;
+    // Sort manually to avoid composite index requirement
+    return photos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
