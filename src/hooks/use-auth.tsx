@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { getAuth, onAuthStateChanged, User, signOut as firebaseSignOut } from 'firebase/auth';
 import { getFirebaseApp } from '@/services/firebase';
