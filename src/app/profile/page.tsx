@@ -22,12 +22,16 @@ export default function ProfilePage() {
     if (user) {
       setName(user.name);
       // Ensure anniversary is in 'yyyy-MM-dd' format for the input
-      const annivDate = user.anniversary ? new Date(user.anniversary) : null;
-      // Adjust for timezone differences
-      const formattedAnniversary = annivDate 
-        ? new Date(annivDate.getTime() - annivDate.getTimezoneOffset() * 60000).toISOString().split('T')[0]
-        : '';
-      setAnniversary(formattedAnniversary);
+      if (user.anniversary) {
+        const annivDate = new Date(user.anniversary);
+        // Adjust for timezone differences to prevent the date from being off by one day
+        const formattedAnniversary = new Date(annivDate.getTime() - annivDate.getTimezoneOffset() * 60000)
+          .toISOString()
+          .split('T')[0];
+        setAnniversary(formattedAnniversary);
+      } else {
+        setAnniversary('');
+      }
     }
   }, [user]);
 
@@ -91,7 +95,7 @@ export default function ProfilePage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue={user.email} disabled />
+              <Input id="email" type="email" value={user.email} disabled />
             </div>
             <div className="space-y-2">
               <Label htmlFor="anniversary">Relationship Anniversary</Label>
