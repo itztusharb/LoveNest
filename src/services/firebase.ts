@@ -21,15 +21,22 @@ function isFirebaseConfigValid(config: typeof firebaseConfig): boolean {
   return Object.values(config).every((value) => !!value);
 }
 
-// Initialize Firebase only if the config is valid
-let app: FirebaseApp | null = null;
-if (isFirebaseConfigValid(firebaseConfig)) {
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+// Initialize Firebase
+let app: FirebaseApp;
+if (!getApps().length) {
+  if (!isFirebaseConfigValid(firebaseConfig)) {
+    console.error("Firebase config is not valid. Please check your .env file.");
+    // We are not throwing an error here to allow the app to build,
+    // but Firebase services will not be available.
+  }
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApp();
 }
-export const firebaseApp = app;
 
-const auth = firebaseApp ? getAuth(firebaseApp) : null;
-const db = firebaseApp ? getFirestore(firebaseApp) : null;
+export const firebaseApp = app;
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 
 // A helper function to create a user with email and password
 export async function createUserWithEmail(

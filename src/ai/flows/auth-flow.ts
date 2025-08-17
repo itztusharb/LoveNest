@@ -11,7 +11,6 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import {
   createUserWithEmail,
-  getUserProfile,
   updateUserProfile,
 } from '@/services/firebase';
 import type { UserProfile } from '@/ai/flows/user-profile-flow';
