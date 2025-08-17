@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,15 +14,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
 import { CircleUserRound, LogIn, LogOut } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
-import { Skeleton } from '../ui/skeleton';
+import { useAuthContext } from '@/app/(app)/layout';
 
 export function UserNav() {
-  const { user, loading, signOut } = useAuth();
-
-  if (loading) {
-    return <Skeleton className="h-8 w-8 rounded-full" />;
-  }
+  const { user, signOut } = useAuthContext();
   
   return (
     <DropdownMenu>

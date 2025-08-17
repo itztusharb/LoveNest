@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthContext } from '@/app/(app)/layout';
 import {
   Card,
   CardContent,
@@ -23,7 +24,7 @@ import type { Photo } from '@/ai/schemas/gallery-schema';
 
 
 export default function DashboardPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuthContext();
   const [latestEntry, setLatestEntry] = useState<JournalEntry | null>(null);
   const [recentPhotos, setRecentPhotos] = useState<Photo[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
@@ -49,24 +50,12 @@ export default function DashboardPage() {
       fetchData();
     }
   }, [user]);
-
-  if (authLoading) {
-    return <DashboardSkeleton />;
-  }
-  
-  if (!user) {
-    // This can happen briefly on redirect or if auth fails.
-    // Or you can redirect them to the login page.
-    return <DashboardSkeleton />;
-  }
   
   const getDaysToAnniversary = () => {
     if (!user.anniversary) return null;
     try {
-      // The date from firestore might be just a string, ensure it's parsed correctly
       const anniversaryDate = parseISO(user.anniversary);
       const today = new Date();
-      // Set hours to 0 to compare dates only
       today.setHours(0, 0, 0, 0);
       let nextAnniversary = new Date(today.getFullYear(), anniversaryDate.getMonth(), anniversaryDate.getDate());
       nextAnniversary.setHours(0,0,0,0);
@@ -188,75 +177,6 @@ export default function DashboardPage() {
                     View Gallery <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
             </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-function DashboardSkeleton() {
-  return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <Skeleton className="h-10 w-1/2" />
-        <Skeleton className="mt-2 h-4 w-1/3" />
-      </div>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-8 w-8 rounded-full" />
-              <div>
-                <Skeleton className="h-6 w-36" />
-                <Skeleton className="mt-1 h-4 w-24" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Skeleton className="h-16 w-24 mx-auto" />
-             <Skeleton className="mt-2 h-4 w-16 mx-auto" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-4">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <div>
-                    <Skeleton className="h-6 w-36" />
-                    <Skeleton className="mt-1 h-4 w-24" />
-                </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Skeleton className="h-5 w-1/2" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-          </CardContent>
-          <CardFooter>
-             <Skeleton className="h-10 w-full" />
-          </CardFooter>
-        </Card>
-        <Card>
-           <CardHeader>
-            <div className="flex items-center gap-4">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <div>
-                    <Skeleton className="h-6 w-36" />
-                    <Skeleton className="mt-1 h-4 w-24" />
-                </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-2">
-                <Skeleton className="aspect-square w-full" />
-                <Skeleton className="aspect-square w-full" />
-                <Skeleton className="aspect-square w-full" />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Skeleton className="h-10 w-full" />
           </CardFooter>
         </Card>
       </div>

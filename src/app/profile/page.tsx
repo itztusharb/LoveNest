@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,11 +9,11 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { updateUserProfile, UserProfile } from '@/ai/flows/user-profile-flow';
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthContext } from '@/app/(app)/layout';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProfilePage() {
-  const { user, loading: authLoading, setUser } = useAuth();
+  const { user, setUser } = useAuthContext();
   const [name, setName] = useState('');
   const [anniversary, setAnniversary] = useState('');
   const { toast } = useToast();
@@ -21,10 +22,8 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       setName(user.name);
-      // Ensure anniversary is in 'yyyy-MM-dd' format for the input
       if (user.anniversary) {
         const annivDate = new Date(user.anniversary);
-        // Adjust for timezone differences to prevent the date from being off by one day
         const formattedAnniversary = new Date(annivDate.getTime() - annivDate.getTimezoneOffset() * 60000)
           .toISOString()
           .split('T')[0];
@@ -46,7 +45,6 @@ export default function ProfilePage() {
           anniversary,
         };
         await updateUserProfile(updatedProfile);
-        // Update the user in the global auth context
         setUser(updatedProfile);
         toast({
           title: 'Success!',
@@ -63,10 +61,6 @@ export default function ProfilePage() {
       }
     }
   };
-  
-  if (authLoading || !user) {
-    return <ProfileSkeleton />;
-  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -109,43 +103,6 @@ export default function ProfilePage() {
           </form>
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-function ProfileSkeleton() {
-  return (
-    <div className="flex flex-col gap-8">
-        <div>
-            <Skeleton className="h-10 w-1/3" />
-            <Skeleton className="h-4 w-1/2 mt-2" />
-        </div>
-        <Card className="max-w-2xl">
-            <CardHeader>
-                <Skeleton className="h-8 w-32" />
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <div className="flex items-center gap-4">
-                    <Skeleton className="h-20 w-20 rounded-full" />
-                    <Skeleton className="h-10 w-28" />
-                </div>
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-16" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-16" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="flex justify-end">
-                    <Skeleton className="h-10 w-32" />
-                </div>
-            </CardContent>
-        </Card>
     </div>
   );
 }
