@@ -107,12 +107,12 @@ export async function getUserProfile(
         if (userProfileSnap.exists()) {
             return userProfileSnap.data();
         } else {
+            // This is not an error, it's a valid state for a new user.
             console.log(`No profile found for user ${userId}, returning null.`);
             return null;
         }
     } catch(error) {
         console.error('Could not fetch user profile.', error);
-        // In case of error, we don't want to return mock data, but let the caller handle it.
         throw error;
     }
 }

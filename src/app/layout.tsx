@@ -29,6 +29,8 @@ function AuthProvider({ children }) {
             setUser(profile);
           } else {
              console.error("Profile not found for authenticated user, signing out.");
+             // This can happen if the user exists in Auth but not in Firestore.
+             // The signInWithGoogle function should prevent this, but this is a safeguard.
              await firebaseSignOut(auth);
              setUser(null);
           }
