@@ -6,34 +6,26 @@ import { Toaster } from '@/components/ui/toaster';
 import { useState, useEffect, createContext, useContext } from 'react';
 import { getAuth, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { getFirebaseApp, getUserProfile } from '@/services/firebase';
-import { useRouter } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
 
 export const AuthContext = createContext(undefined);
 
 function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const app = getFirebaseApp();
     const auth = getAuth(app);
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setLoading(true);
       if (firebaseUser) {
         try {
           const profile = await getUserProfile(firebaseUser.uid);
-          if (profile) {
-            setUser(profile);
-          } else {
-             console.error("Profile not found for authenticated user, signing out.");
-             await firebaseSignOut(auth);
-             setUser(null);
-          }
+          setUser(profile || null); // Set user to profile or null if not found
         } catch (error) {
-          console.error("Failed to fetch user profile, signing out.", error);
-          await firebaseSignOut(auth);
+          console.error("Failed to fetch user profile", error);
           setUser(null);
         }
       } else {
@@ -49,7 +41,7 @@ function AuthProvider({ children }) {
     const app = getFirebaseApp();
     const auth = getAuth(app);
     await firebaseSignOut(auth);
-    router.replace('/sign-in');
+    // The redirect will be handled by the page logic now
   };
 
   const value = {

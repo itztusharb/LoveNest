@@ -23,6 +23,7 @@ export default function HomePage() {
   return (
     <div className="flex h-screen w-screen items-center justify-center">
       <div className="w-full max-w-md space-y-4 p-4">
+        <h1 className="text-center text-2xl font-bold text-primary">Loading LoveNest...</h1>
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-24 w-full" />

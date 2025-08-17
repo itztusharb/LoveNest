@@ -19,14 +19,11 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { getJournalEntries } from '@/ai/flows/journal-flow';
 import { getPhotos } from '@/ai/flows/gallery-flow';
-import type { JournalEntry } from '@/ai/schemas/journal-schema';
-import type { Photo } from '@/ai/schemas/gallery-schema';
-
 
 export default function DashboardPage() {
   const { user } = useAuthContext();
-  const [latestEntry, setLatestEntry] = useState<JournalEntry | null>(null);
-  const [recentPhotos, setRecentPhotos] = useState<Photo[]>([]);
+  const [latestEntry, setLatestEntry] = useState(null);
+  const [recentPhotos, setRecentPhotos] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {

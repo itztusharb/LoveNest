@@ -74,7 +74,7 @@ export default function SignInPage() {
         <div>
             <Heart className="mx-auto h-12 w-auto text-primary" />
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-foreground">
-            Sign in to your Lovebirds account
+            Sign in to your LoveNest account
             </h2>
             <p className="mt-2 text-center text-sm text-muted-foreground">
             Or{' '}
