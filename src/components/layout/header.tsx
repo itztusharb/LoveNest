@@ -7,17 +7,17 @@ import Link from 'next/link';
 
 export function Header() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-20 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:justify-end peer-data-[variant=inset]:left-[--sidebar-width] peer-data-[state=collapsed]:peer-data-[variant=inset]:left-[--sidebar-width-icon]">
-      <div className="flex items-center gap-2 md:hidden">
+    <header className="fixed top-0 left-0 right-0 z-20 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:justify-end peer-data-[variant=inset]:left-[--sidebar-width] peer-data-[state=collapsed]:peer-data-[variant=inset]:left-[--sidebar-width-icon]">
+      <div className="flex items-center gap-2 lg:hidden">
         <SidebarTrigger />
         <Link href="/">
           <Logo />
         </Link>
       </div>
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <UserNav />
       </div>
-      <div className="md:hidden">
+      <div className="lg:hidden">
         <UserNav />
       </div>
     </header>
