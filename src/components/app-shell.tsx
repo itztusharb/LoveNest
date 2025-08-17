@@ -29,7 +29,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
              isChatPage && "flex flex-col"
           )}>
              <div className={cn(
-                "mx-auto max-w-7xl",
+                "mx-auto",
+                !isChatPage && "max-w-7xl",
                 isChatPage && "flex flex-1 flex-col self-stretch"
              )}>
               {children}
