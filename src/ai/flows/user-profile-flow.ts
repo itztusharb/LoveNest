@@ -9,8 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { doc, getFirestore, setDoc } from 'firebase/firestore';
-import { firebaseApp } from '@/services/firebase';
+import { updateUserProfile as updateUserProfileService } from '@/services/firebase';
 
 const UserProfileSchema = z.object({
   id: z.string().describe('The user ID.'),
@@ -29,12 +28,7 @@ const updateUserProfileFlow = ai.defineFlow(
     outputSchema: z.void(),
   },
   async (profile) => {
-    if (!firebaseApp) {
-        throw new Error("Firebase is not configured. Cannot update profile.");
-    }
-    const db = getFirestore(firebaseApp);
-    const userProfileRef = doc(db, 'userProfiles', profile.id);
-    await setDoc(userProfileRef, profile, { merge: true });
+    await updateUserProfileService(profile);
   }
 );
 
