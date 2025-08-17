@@ -109,6 +109,7 @@ export default function GalleryPage() {
         
         await addPhoto({
           userId: user.id,
+          partnerId: user.partnerId,
           src: base64String,
           caption,
           hint,

@@ -7,7 +7,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, limit, writeBatch, updateDoc, FieldValue, deleteField } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, limit, writeBatch, updateDoc, deleteField, FieldValue } from 'firebase/firestore';
 import 'dotenv/config';
 
 
@@ -114,8 +114,6 @@ export async function getUserProfile(
         if (userProfileSnap.exists()) {
             return userProfileSnap.data();
         } else {
-            // This is not an error, it's a valid state for a new user.
-            console.log(`No profile found for user ${userId}, returning null.`);
             return null;
         }
     } catch(error) {
@@ -164,23 +162,34 @@ export async function getJournalEntries(userId) {
 export async function addPhoto(photo) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
-    await addDoc(collection(db, 'photos'), {
+    const dbPhoto = {
         ...photo,
         createdAt: new Date().toISOString(),
-    });
+    };
+    if (!dbPhoto.partnerId) {
+        delete dbPhoto.partnerId;
+    }
+
+    await addDoc(collection(db, 'photos'), dbPhoto);
 }
 
-export async function getPhotos(userId) {
+export async function getPhotos(userIds: string[]) {
+    if (userIds.length === 0) {
+        return [];
+    }
     const app = getFirebaseApp();
     const db = getFirestore(app);
-    const q = query(collection(db, 'photos'), where('userId', '==', userId));
-    const querySnapshot = await getDocs(q);
+    
+    // To get photos from the user and their partner, we query where 'userId' is the main user OR where 'partnerId' is the main user.
+    // This fetches photos uploaded by the user, and photos uploaded by the partner where the user was the partner at the time of upload.
+    const userPhotosQuery = query(collection(db, 'photos'), where('userId', 'in', userIds));
+    
+    const querySnapshot = await getDocs(userPhotosQuery);
     const photos = [];
     querySnapshot.forEach((doc) => {
         photos.push({ id: doc.id, ...doc.data() });
     });
-    // Sort manually to avoid composite index requirement
-    return photos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return photos;
 }
 
 // Notification and Linking services

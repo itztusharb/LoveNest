@@ -1,8 +1,10 @@
+
 import { z } from 'genkit';
 
 export const PhotoSchema = z.object({
   id: z.string(),
   userId: z.string(),
+  partnerId: z.string().optional(),
   src: z.string().url(),
   caption: z.string(),
   createdAt: z.string(),

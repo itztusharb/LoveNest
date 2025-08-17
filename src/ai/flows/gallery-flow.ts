@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -9,6 +10,7 @@ import { z } from 'genkit';
 import {
   addPhoto as addPhotoService,
   getPhotos as getPhotosService,
+  getUserProfile,
 } from '@/services/firebase';
 import { PhotoSchema, AddPhotoInputSchema } from '@/ai/schemas/gallery-schema';
 import type { Photo, AddPhotoInput } from '@/ai/schemas/gallery-schema';
@@ -35,7 +37,17 @@ const getPhotosFlow = ai.defineFlow(
     outputSchema: z.array(PhotoSchema),
   },
   async (userId) => {
-    return await getPhotosService(userId);
+    const userProfile = await getUserProfile(userId);
+    const userIdsToFetch = [userId];
+
+    if (userProfile?.partnerId) {
+      userIdsToFetch.push(userProfile.partnerId);
+    }
+    
+    const photos = await getPhotosService(userIdsToFetch);
+
+    // Sort all photos by date descending
+    return photos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 );
 
