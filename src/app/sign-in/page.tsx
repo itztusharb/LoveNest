@@ -54,8 +54,8 @@ export default function SignInPage() {
         title: 'Signed In!',
         description: 'Welcome back!',
       });
-      // Redirect to the dashboard after successful sign-in
-      router.replace('/dashboard');
+      // Redirect to the root, which will handle routing to the dashboard
+      router.replace('/');
     } catch (error: any) {
       toast({
         variant: 'destructive',
