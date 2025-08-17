@@ -34,6 +34,16 @@ export function getFirebaseApp() {
     return firebaseApp;
 }
 
+export async function createUserProfile(profileData) {
+    const profile = {
+        anniversary: null,
+        partnerId: null,
+        ...profileData
+    };
+    await updateUserProfile(profile);
+    return profile;
+}
+
 export async function signInWithGoogle() {
   const app = getFirebaseApp();
   const auth = getAuth(app);
@@ -48,15 +58,12 @@ export async function signInWithGoogle() {
     
     if (!profile) {
       // If profile doesn't exist, create it
-      const newUserProfile = {
+      await createUserProfile({
         id: user.uid,
         name: user.displayName,
         email: user.email,
         photoUrl: user.photoURL,
-        anniversary: null, // User needs to set this in their profile
-        partnerId: null,
-      };
-      await updateUserProfile(newUserProfile);
+      });
     }
     
     return result;

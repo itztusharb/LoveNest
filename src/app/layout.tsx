@@ -5,7 +5,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { useState, useEffect, createContext } from 'react';
 import { getAuth, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
-import { getFirebaseApp, getUserProfile } from '@/services/firebase';
+import { getFirebaseApp, getUserProfile, createUserProfile } from '@/services/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
 
@@ -24,18 +24,25 @@ function AuthProvider({ children }) {
       setLoading(true);
       if (firebaseUser) {
         try {
-          const profile = await getUserProfile(firebaseUser.uid);
-          if (profile) {
-            setUser(profile);
-          } else {
-             console.error("Profile not found for authenticated user, signing out.");
-             // This can happen if the user exists in Auth but not in Firestore.
-             // The signInWithGoogle function should prevent this, but this is a safeguard.
-             await firebaseSignOut(auth);
-             setUser(null);
+          let profile = await getUserProfile(firebaseUser.uid);
+          
+          if (!profile) {
+            console.log("Profile not found for authenticated user, creating one.");
+            // If profile doesn't exist, create it.
+            // This handles the race condition where auth state changes before profile is written.
+            profile = await createUserProfile({
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName,
+              email: firebaseUser.email,
+              photoUrl: firebaseUser.photoURL,
+              anniversary: null,
+              partnerId: null,
+            });
           }
+          setUser(profile);
+
         } catch (error) {
-          console.error("Failed to fetch user profile, signing out.", error);
+          console.error("Failed to fetch or create user profile, signing out.", error);
           await firebaseSignOut(auth);
           setUser(null);
         }
