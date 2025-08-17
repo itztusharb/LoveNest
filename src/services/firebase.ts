@@ -7,7 +7,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, limit, writeBatch, updateDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, limit, writeBatch, updateDoc, FieldValue, deleteField } from 'firebase/firestore';
 import 'dotenv/config';
 
 
@@ -271,7 +271,7 @@ export async function markNotificationAsRead(notificationId: string) {
     await updateDoc(notificationRef, { isRead: true });
 }
 
-export async function unlinkPartner(userId, partnerId) {
+export async function unlinkPartner(userId: string, partnerId: string) {
     const app = getFirebaseApp();
     const db = getFirestore(app);
     const batch = writeBatch(db);
@@ -280,9 +280,8 @@ export async function unlinkPartner(userId, partnerId) {
     const partnerRef = doc(db, 'userProfiles', partnerId);
 
     // Use Firestore's FieldValue.delete() to remove the field
-    const { FieldValue } = await import('firebase/firestore');
-    batch.update(userRef, { partnerId: FieldValue.delete() });
-    batch.update(partnerRef, { partnerId: FieldValue.delete() });
+    batch.update(userRef, { partnerId: deleteField() });
+    batch.update(partnerRef, { partnerId: deleteField() });
     
     await batch.commit();
 }

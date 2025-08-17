@@ -9,9 +9,14 @@ import { getFirebaseApp, getUserProfile, createUserProfile } from '@/services/fi
 import { usePathname, useRouter } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
 
-export const AuthContext = createContext(undefined);
+export const AuthContext = createContext<{
+    user: any;
+    signOut: () => void;
+    setUser: (user: any) => void;
+    loading: boolean;
+} | undefined>(undefined);
 
-function AuthProvider({ children }) {
+function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -28,13 +33,13 @@ function AuthProvider({ children }) {
           
           if (!profile) {
             console.log("Profile not found for authenticated user, creating one.");
-            // If profile doesn't exist, create it.
-            // This handles the race condition where auth state changes before profile is written.
+            // This can happen if the user exists in Auth but not in Firestore,
+            // for example if they are a new user. We create the profile here.
             profile = await createUserProfile({
               id: firebaseUser.uid,
-              name: firebaseUser.displayName,
+              name: firebaseUser.displayName || 'New User',
               email: firebaseUser.email,
-              photoUrl: firebaseUser.photoURL,
+              photoUrl: firebaseUser.photoURL || `https://placehold.co/80x80.png?text=${firebaseUser.email?.charAt(0).toUpperCase() || 'U'}`,
               anniversary: null,
               partnerId: null,
             });
@@ -59,6 +64,7 @@ function AuthProvider({ children }) {
     const app = getFirebaseApp();
     const auth = getAuth(app);
     await firebaseSignOut(auth);
+    setUser(null);
     router.replace('/sign-in');
   };
 
@@ -76,7 +82,7 @@ function AuthProvider({ children }) {
   );
 }
 
-function ConditionalLayout({ children }) {
+function ConditionalLayout({ children }: { children: React.ReactNode}) {
     const pathname = usePathname();
     const noShellRoutes = ['/sign-in', '/'];
 
@@ -90,6 +96,8 @@ function ConditionalLayout({ children }) {
 
 export default function RootLayout({
   children,
+}: {
+  children: React.ReactNode,
 }) {
   return (
     <html lang="en" suppressHydrationWarning>

@@ -15,7 +15,7 @@ import { Heart } from 'lucide-react';
 import { signInWithGoogle } from '@/services/firebase';
 import { useRouter } from 'next/navigation';
 
-function GoogleIcon(props) {
+function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -58,7 +58,7 @@ export default function SignInPage() {
         description: 'Welcome to LoveNest!',
       });
       router.replace('/');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google Sign-In Error", error);
       if (error.code === 'auth/popup-closed-by-user') {
          toast({
