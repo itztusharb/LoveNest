@@ -5,12 +5,15 @@
  *
  * - registerUser - A function that handles new user registration.
  * - RegisterUserInput - The input type for the registerUser function.
+ * - signInUser - A function that handles user sign-in.
+ * - SignInUserInput - The input type for the signInUser function.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import {
   createUserWithEmail,
+  signInWithEmail,
   updateUserProfile,
 } from '@/services/firebase';
 import type { UserProfile } from '@/ai/flows/user-profile-flow';
@@ -43,7 +46,6 @@ const registerUserFlow = ai.defineFlow(
       email: input.email,
       photoUrl: `https://placehold.co/80x80.png?text=${input.name.charAt(0)}`,
       anniversary: input.anniversary,
-      // We are not storing DOB in this example, but you could add it to the UserProfile schema
     };
 
     await updateUserProfile(profile);
@@ -52,4 +54,27 @@ const registerUserFlow = ai.defineFlow(
 
 export async function registerUser(input: RegisterUserInput): Promise<void> {
   await registerUserFlow(input);
+}
+
+
+const SignInUserInputSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
+export type SignInUserInput = z.infer<typeof SignInUserInputSchema>;
+
+const signInUserFlow = ai.defineFlow(
+  {
+    name: 'signInUserFlow',
+    inputSchema: SignInUserInputSchema,
+    outputSchema: z.string(), // Returns the user's ID
+  },
+  async (input) => {
+    const userCredential = await signInWithEmail(input.email, input.password);
+    return userCredential.user.uid;
+  }
+);
+
+export async function signInUser(input: SignInUserInput): Promise<string> {
+  return await signInUserFlow(input);
 }
