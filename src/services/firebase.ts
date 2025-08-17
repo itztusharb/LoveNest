@@ -8,7 +8,7 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
 } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, writeBatch, updateDoc, deleteField, FieldValue } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, writeBatch, updateDoc, deleteField, FieldValue, onSnapshot, orderBy, serverTimestamp } from 'firebase/firestore';
 import 'dotenv/config';
 
 
@@ -295,4 +295,50 @@ export async function unlinkPartner(userId: string, partnerId: string) {
     batch.update(partnerRef, { partnerId: deleteField() });
     
     await batch.commit();
+}
+
+// Chat services
+export async function getOrCreateChatId(userId1: string, userId2: string): Promise<string> {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    // Sort user IDs to create a consistent chat ID
+    const chatId = [userId1, userId2].sort().join('_');
+    const chatRef = doc(db, 'chats', chatId);
+    const chatSnap = await getDoc(chatRef);
+
+    if (!chatSnap.exists()) {
+        await setDoc(chatRef, {
+            participants: [userId1, userId2],
+            createdAt: serverTimestamp(),
+        });
+    }
+
+    return chatId;
+}
+
+export async function addChatMessage(chatId: string, message: { senderId: string, text: string }) {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    const messagesRef = collection(db, 'chats', chatId, 'messages');
+    await addDoc(messagesRef, {
+        ...message,
+        createdAt: new Date().toISOString(),
+    });
+}
+
+export function getChatMessages(chatId: string, callback: (messages: any[]) => void) {
+    const app = getFirebaseApp();
+    const db = getFirestore(app);
+    const messagesRef = collection(db, 'chats', chatId, 'messages');
+    const q = query(messagesRef, orderBy('createdAt', 'asc'));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const messages = [];
+        querySnapshot.forEach((doc) => {
+            messages.push({ id: doc.id, ...doc.data() });
+        });
+        callback(messages);
+    });
+
+    return unsubscribe;
 }
